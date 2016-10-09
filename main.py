@@ -26,17 +26,13 @@ class FoodSort(object):
         self.sort_data()
 
     def gen_header(self):
-        """
-        Adds generated time, location name, and update time to tree_data object.
-        """
+        # Generated time, location name, and update time to tree_data object.
         self.tree_data['generated_time'] = str(datetime.now())
         self.tree_data['location_name'] = parse_qs(urlparse(self.url).query).get('locationName')[0]
         self.tree_data['update_time'] = None
 
     def daily_menu_tree(self):
-        """
-        Grabs webpage and returns the tree.
-        """
+        # Grabs web page and returns the tree.
         page = requests.get(self.url)
         html_tree = html.fromstring(page.content)
         self.daily_menu = html_tree.findall('.//td[@width="30%"]')
