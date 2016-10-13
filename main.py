@@ -39,9 +39,9 @@ class FoodSort(object):
         - menu_date : date for menu.
         """
 
-        # Create data lists:
+        # Create data lists/objects:
         self.tree_data['data'] = []
-        self.tree_data['location_data'] = []
+        self.tree_data['location_data'] = {}
 
         # Add data as described above:
         self.tree_data['location_data']['location_name'] = parse_qs(urlparse(self.url).query).get('locationName')[0]
