@@ -79,10 +79,12 @@ class FoodSort(object):
 
                         try:
                             if unsorted_menu_items[idx + count][:2] != '--':
-                                # Strip extraneous & most special characters:
-                                ext_stripped = re.sub('[^a-zA-Z0-9-() *.]', '', unsorted_menu_items[idx + count])
-                                # Remove duplicate whitespaces:
-                                sub_menu_items.append(re.sub(' +', ' ', ext_stripped))
+                                # Remove duplicate whitespaces & strip extraneous & most special characters:
+                                sub_menu_items.append(re.sub(' +',
+                                                             ' ',
+                                                             re.sub('[^a-zA-Z0-9-() *.]',
+                                                                    '',
+                                                                    unsorted_menu_items[idx + count])))
                                 # Delete item from master list.
                                 del unsorted_menu_items[idx + count]
                                 count += 1
