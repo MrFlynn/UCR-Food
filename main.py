@@ -49,7 +49,7 @@ class FoodSort(object):
         self.tree_data['generated_time'] = str(datetime.now())
         self.tree_data['update_time'] = None
         self.tree_data['source_url'] = quote(self.url, safe='')
-        self.tree_data['menu_date'] = str(datetime.now().date())
+        self.tree_data['menu_date'] = parse_qs(urlparse(self.url).query).get('dtdate')[0].replace('/', '-')
 
     def daily_menu_tree(self):
         # Grabs web page and returns the tree.
