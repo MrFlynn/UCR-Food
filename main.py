@@ -15,6 +15,7 @@ class FoodSort(object):
     - add_base_data : adds useful data to object and sets up structure of object.
     """
     def __init__(self, url):
+        # Initial class variables.
         self.url = url
         self.daily_menu = None
         self.tree_data = {}
@@ -25,6 +26,14 @@ class FoodSort(object):
         self.daily_menu_tree()
         # Generate json output.
         self.sort_data()
+
+    def check_url_format(self):
+        # Checks to make sure 'dtdate' is in passed url. If not, raise exception.
+
+        if 'dtdate' in parse_qs(urlparse(self.url).query):
+            pass
+        else:
+            raise Exception('URL does not contain proper query strings.')
 
     def add_base_data(self):
         """
@@ -53,6 +62,7 @@ class FoodSort(object):
 
     def daily_menu_tree(self):
         # Grabs web page and returns the tree.
+
         page = requests.get(self.url)
         html_tree = html.fromstring(page.content)
         self.daily_menu = html_tree.findall('.//td[@width="30%"]')
