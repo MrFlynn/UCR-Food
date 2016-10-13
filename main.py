@@ -28,13 +28,14 @@ class FoodSort(object):
     def gen_header(self):
         """
         Generates useful information for JSON object.
-        - generated_time : time the object was originally created.
+        - data : object containing parsed data from sort_data method.
         - location_data :
             - location_name : name of dining hall location.
             - location_num : dining hall location number.
+        - generated_time : time the object was originally created.
         - update_time : in case menu changes and object needs to be updated.
         - source_url : encoded URL from which data was extracted.
-        - data : object containing parsed data from sort_data method.
+        - menu_date : date for menu.
         """
 
         # Create data lists:
@@ -44,10 +45,10 @@ class FoodSort(object):
         # Add data as described above:
         self.tree_data['location_data']['location_name'] = parse_qs(urlparse(self.url).query).get('locationName')[0]
         self.tree_data['location_data']['location_num'] = parse_qs(urlparse(self.url).query).get('locationNum')[0]
-        self.tree_data['menu_date'] = str(datetime.now().date())
         self.tree_data['generated_time'] = str(datetime.now())
-        self.tree_data['source_url'] = quote(self.url, safe='')
         self.tree_data['update_time'] = None
+        self.tree_data['source_url'] = quote(self.url, safe='')
+        self.tree_data['menu_date'] = str(datetime.now().date())
 
     def daily_menu_tree(self):
         # Grabs web page and returns the tree.
