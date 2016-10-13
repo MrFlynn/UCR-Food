@@ -12,6 +12,7 @@ class FoodSort(object):
     Methods:
     - daily_menu_tree : grabs the web page, generated the tree, and returns the menu sections.
     - sort_data : parses the tree and returns an object sorted by menu_section -> dining hall food section -> menu item.
+    - add_base_data : adds useful data to object and sets up structure of object.
     """
     def __init__(self, url):
         self.url = url
@@ -19,13 +20,13 @@ class FoodSort(object):
         self.tree_data = {}
 
         # Generates header info for daily_menu object:
-        self.gen_header()
+        self.add_base_data()
         # Generate daily menu html_tree.
         self.daily_menu_tree()
         # Generate json output.
         self.sort_data()
 
-    def gen_header(self):
+    def add_base_data(self):
         """
         Generates useful information for JSON object.
         - data : object containing parsed data from sort_data method.
