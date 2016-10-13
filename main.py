@@ -1,6 +1,6 @@
 # Imports:
 from datetime import datetime
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, quote
 from lxml import html
 import requests
 import re
@@ -26,9 +26,27 @@ class FoodSort(object):
         self.sort_data()
 
     def gen_header(self):
-        # Generated time, location name, and update time to tree_data object.
+        """
+        Generates useful information for JSON object.
+        - generated_time : time the object was originally created.
+        - location_data :
+            - location_name : name of dining hall location.
+            - location_num : dining hall location number.
+        - update_time : in case menu changes and object needs to be updated.
+        - source_url : encoded URL from which data was extracted.
+        - data : object containing parsed data from sort_data method.
+        """
+
+        # Create data lists:
+        self.tree_data['data'] = []
+        self.tree_data['location_data'] = []
+
+        # Add data as described above:
+        self.tree_data['location_data']['location_name'] = parse_qs(urlparse(self.url).query).get('locationName')[0]
+        self.tree_data['location_data']['location_num'] = parse_qs(urlparse(self.url).query).get('locationNum')[0]
+        self.tree_data['menu_date'] = str(datetime.now().date())
         self.tree_data['generated_time'] = str(datetime.now())
-        self.tree_data['location_name'] = parse_qs(urlparse(self.url).query).get('locationName')[0]
+        self.tree_data['source_url'] = quote(self.url, safe='')
         self.tree_data['update_time'] = None
 
     def daily_menu_tree(self):
@@ -76,4 +94,5 @@ class FoodSort(object):
                     result[item[3:-3]] = sub_menu_items
 
             # Set tree data to result.
-            self.tree_data[dining_section.find_class("shortmenumeals")[0].text.lower()] = result
+            self.tree_data['data'].append({'type': dining_section.find_class("shortmenumeals")[0].text.lower(),
+                                           'content': result})
