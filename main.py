@@ -24,10 +24,6 @@ class FoodSort(object):
         self.check_url_format()
         # Generates header info for daily_menu object:
         self.add_base_data()
-        # Generate daily menu html_tree.
-        self.daily_menu_tree()
-        # Generate mutable object output.
-        self.sort_data()
 
     def check_url_format(self):
         """
@@ -97,6 +93,9 @@ class FoodSort(object):
         self.daily_menu = html_tree.findall('.//td[@width="30%"]')
 
     def sort_data(self):
+        # Grab page and generate tree.
+        self.daily_menu_tree()
+
         for dining_section in self.daily_menu:
             # Resulting object-based data structure.
             result = {}
