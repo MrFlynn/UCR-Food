@@ -20,20 +20,49 @@ class FoodSort(object):
         self.daily_menu = None
         self.tree_data = {}
 
+        # Check URL to make sure it is correct:
+        self.check_url_format()
         # Generates header info for daily_menu object:
         self.add_base_data()
         # Generate daily menu html_tree.
         self.daily_menu_tree()
-        # Generate json output.
+        # Generate mutable object output.
         self.sort_data()
 
     def check_url_format(self):
-        # Checks to make sure 'dtdate' is in passed url. If not, raise exception.
+        """
+        Function to make sure input data is of correct type and has all the right information.
 
-        if 'dtdate' in parse_qs(urlparse(self.url).query):
+        Steps:
+        - Check to make sure the self.url is a str.
+        - Check to make sure url is correct.
+        - Check to make sure url has correct query strings
+        """
+
+        # Make sure self.url is a string and not a number or something...
+        if isinstance(self.url, str):
             pass
         else:
-            raise Exception('URL does not contain proper query strings.')
+            raise TypeError('Passed url is not a string.')
+
+        # Website location and path.
+        base_url = urlparse(self.url).netloc + urlparse(self.url).path
+
+        # Check to make sure the url is correct.
+        if base_url != '138.23.12.141/foodpro/shortmenu.asp':
+            raise Exception('URL location incorrect.')
+
+        # List of url parameters to check.
+        url_parameters = ['dtdate', 'locationNum', 'locationName']
+        # Parse url for query strings.
+        parsed_url = parse_qs(urlparse(self.url).query)
+
+        # Check that all correct query strings are in passed url.
+        for parameter in url_parameters:
+            if parameter in parsed_url:
+                continue
+            else:
+                raise Exception('URL does not contain proper query strings.')
 
     def add_base_data(self):
         """
