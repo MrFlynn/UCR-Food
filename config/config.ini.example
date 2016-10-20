@@ -1,10 +1,10 @@
 [DEFAULT]
 BaseURL =
 
-[AI]
+[LOCATION1]
 LocationNum =
 LocationName =
 
-[LOTHIAN]
+[LOCATION2]
 LocationNum =
 LocationName =
