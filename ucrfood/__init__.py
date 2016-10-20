@@ -1,1 +1,1 @@
-# Todo: create main package and import
+from .main import *
