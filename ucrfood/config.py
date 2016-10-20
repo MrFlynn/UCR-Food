@@ -13,7 +13,7 @@ class Config(object):
     def construct_url(self):
         urls = []
 
-        for section in self.config.sections()
+        for section in self.config.sections():
             if section == 'DEFAULT':
                 continue
             else:
