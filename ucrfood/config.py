@@ -11,7 +11,7 @@ class Config(object):
     """
     def __init__(self, filename):
         # Initialize class variables:
-        self.config_file = path.abspath(path.join('../config', filename))
+        self.config_file = path.abspath(path.join('./config', filename))
         self.config = configparser.ConfigParser()
 
         # Grab configuration file and read it.
@@ -21,29 +21,23 @@ class Config(object):
         """
         Reads the configuration file.
 
-        NOTE: this is only in a separate method because I want to be able to load the file and run logic on it
-        separately.
+        NOTE: this is only in a separate method because I want to be able to load the file and run logic on
+        it separately.
         """
 
         self.config.read(self.config_file)
 
-    def construct_url(self):
-        """
-        Gets the sections from the configuration file, and gets the requisite data from each to create the url w/o the
-        dtdate object.
-        """
+    def construct_dict(self) -> dict:
 
-        # List of urls.
-        urls = []
+        config_dict = {}
 
-        for section in self.config.sections():
-            if section == 'DEFAULT':
-                continue
-            else:
-                url_base = self.config['DEFAULT']['BaseURL']
-                location_num = self.config[section]['LocationNum']
-                location_name = self.config[section]['LocationName']
+        for config_section in self.config.sections():
 
-                urls.append(url_base + location_num + location_name)
+            section_dict = {}
 
-        return urls
+            for key in self.config[config_section]:
+                section_dict[key] = self.config[config_section][key]
+
+            config_dict[config_section] = output2
+
+        return config_dict
