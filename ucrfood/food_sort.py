@@ -94,13 +94,13 @@ class FoodSort(object):
         html_tree = html.fromstring(page.content)
         self.daily_menu = html_tree.findall('.//td[@width="30%"]')
 
-    def sort_data(self):
+    def sort_data(self) -> dict:
         # Grab page and generate tree.
         self.daily_menu_tree()
 
         for dining_section in self.daily_menu:
             # Resulting object-based data structure.
-            result = {}
+            food_dict = {}
             # Filters html tree for unsorted dining hall food sections/menu items.
             unsorted_menu_items = dining_section.xpath('.//a[@name="Recipe_Desc"]/text()|\
                                                         .//div[@class="shortmenucats"]/span/text()')
@@ -135,8 +135,8 @@ class FoodSort(object):
                             break
 
                     # Menu item to dining hall food section assignment.
-                    result[item[3:-3]] = sub_menu_items
+                    food_dict[item[3:-3]] = sub_menu_items
 
-            # Set tree data to result.
+            # Set tree data to food_dict.
             self.tree_data['data'].append({'type': dining_section.find_class("shortmenumeals")[0].text.lower(),
-                                           'content': result})
+                                           'content': food_dict})
