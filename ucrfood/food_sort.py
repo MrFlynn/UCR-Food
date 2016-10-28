@@ -3,6 +3,7 @@ from datetime import datetime
 from urllib.parse import urlparse, parse_qs, quote
 from lxml import html
 import requests
+import uuid
 import re
 
 
@@ -82,6 +83,7 @@ class FoodSort(object):
         self.tree_data['location_data']['location_num'] = parse_qs(urlparse(self.url).query).get('locationNum')[0]
         self.tree_data['generated_time'] = str(datetime.now())
         self.tree_data['update_time'] = None
+        self.tree_data['uuid'] = str(uuid.uuid4())
         self.tree_data['source_url'] = quote(self.url, safe='')
         self.tree_data['menu_date'] = parse_qs(urlparse(self.url).query).get('dtdate')[0].replace('/', '-')
 
