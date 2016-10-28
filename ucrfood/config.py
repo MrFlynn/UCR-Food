@@ -38,6 +38,6 @@ class Config(object):
             for key in self.config[config_section]:
                 section_dict[key] = self.config[config_section][key]
 
-            config_dict[config_section] = output2
+            config_dict[config_section] = section_dict
 
         return config_dict
