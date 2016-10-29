@@ -6,7 +6,7 @@ class Config(object):
     """
     Description: reading configuration file and returning compiled information from said file.
     Methods:
-    - get_config : reads config file.
+    - get_config_and_check : reads config file.
     - construct_url : creates the urls needed for other classes based on constructs in configuration file.
     """
     def __init__(self, filename: str, config_dir: str = './config'):
@@ -15,17 +15,36 @@ class Config(object):
         self.config = configparser.ConfigParser()
 
         # Grab configuration file and read it.
-        self.get_config()
+        self.get_config_and_check()
 
-    def get_config(self):
+    def get_config_and_check(self, params: list):
         """
-        Reads the configuration file.
-
-        NOTE: this is only in a separate method because I want to be able to load the file and run logic on
-        it separately.
+        Reads the configuration file. Checks if file exists and is not empty; returns
+        exception if either check is false. Then it makes sure to check the parameters
+        passed exist in the configuration file.
         """
 
+        # Read configuration file.
         self.config.read(self.config_file)
+
+        # Check if file exists and is not empty:
+        if path.exists(self.config_file) and path.getsize(self.config_file) > 0:
+            pass
+        else:
+            raise Exception('Configuration file does not exist.')
+
+        # List of configuration keys.
+        config_keys = []
+
+        for section in self.config.sections():
+            # Added options from configuration file. Duplicates don't matter.
+            config_keys.extend(self.config.options(section))
+
+        # Check if all parameters exist in config_keys list.
+        if not set(params).isdisjoint(config_keys):
+            pass
+        else:
+            raise Exception('Not all parameters exist in configuration file.')
 
     def construct_dict(self) -> dict:
         """
