@@ -6,7 +6,7 @@ class Config(object):
     """
     Description: reading configuration file and returning compiled information from said file.
     Methods:
-    - get_config_and_check : reads config file.
+    - get_config_and_check : reads configuration file and performs various tests on file.
     - construct_url : creates the urls needed for other classes based on constructs in configuration file.
     """
     def __init__(self, filename: str, config_dir: str = './config'):
