@@ -9,9 +9,9 @@ class Config(object):
     - get_config : reads config file.
     - construct_url : creates the urls needed for other classes based on constructs in configuration file.
     """
-    def __init__(self, filename):
+    def __init__(self, filename, config_dir):
         # Initialize class variables:
-        self.config_file = path.abspath(path.join('./config', filename))
+        self.config_file = path.abspath(path.join(config_dir, filename))
         self.config = configparser.ConfigParser()
 
         # Grab configuration file and read it.
