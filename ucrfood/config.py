@@ -1,5 +1,6 @@
 import configparser
 import os.path as path
+from collections import OrderedDict
 
 
 class Config(object):
@@ -14,8 +15,8 @@ class Config(object):
         self.config_file = path.abspath(path.join(config_dir, filename))
         self.config = configparser.ConfigParser()
 
-        # Grab configuration file and read it.
-        self.get_config_and_check()
+        # Read configuration file.
+        self.config.read(self.config_file)
 
     def get_config_and_check(self, params: list):
         """
@@ -23,9 +24,6 @@ class Config(object):
         exception if either check is false. Then it makes sure to check the parameters
         passed exist in the configuration file.
         """
-
-        # Read configuration file.
-        self.config.read(self.config_file)
 
         # Check if file exists and is not empty:
         if path.exists(self.config_file) and path.getsize(self.config_file) > 0:
@@ -40,21 +38,46 @@ class Config(object):
             # Added options from configuration file. Duplicates don't matter.
             config_keys.extend(self.config.options(section))
 
-        # Check if all parameters exist in config_keys list.
-        if not set(params).isdisjoint(config_keys):
-            pass
-        else:
-            raise Exception('Not all parameters exist in configuration file.')
+        # Remove duplicate items from the list.
+        config_keys = list(OrderedDict.fromkeys(config_keys))
 
-    def construct_dict(self) -> dict:
+        if config_keys == params:
+            # Check if all parameters exist in config_keys list.
+            print("All items in the list are identical")
+            pass
+        elif set(params).isdisjoint(config_keys):
+            # Checks to make sure that some arguments exist.
+            if len(params) < len(config_keys):
+                # If user provided fewer args than exist in the file, warn them.
+                extra_args = ', '.join(list(set(config_keys) - set(params)))
+                warn_string = 'Some params matched file. Provided params did not include: {0}'.format(extra_args)
+                raise Warning(warn_string)
+            else:
+                # If user provided arguments not found in the config file, warn them.
+                missing_args = ', '.join(list(set(params) - set(config_keys)))
+                warn_string = 'Some params matched file. These params did not: {0}'.format(missing_args)
+                raise Warning(warn_string)
+        else:
+            raise Warning('No parameters passed exist in the config file.')
+
+    def construct_dict(self, check_params: list = None) -> dict:
         """
         Turns configuration file into dict with mirrored structure. Structure will look like this:
         {section_name: {key_1: key_val, ...}, ...}
+
+        There is an optional argument (list) that when passed will check if parameters exist in configuration
+        file.
 
         The first loop goes through and finds each section. The inner loop takes each section and grabs each
         key from said respective section. NOTE: A section named [DEFAULT] will result in each section
         containing everything that was in the [DEFAULT] section.
         """
+
+        if check_params:
+            if type(check_params) is list:
+                self.get_config_and_check(check_params)
+            else:
+                raise TypeError('Check_params should be a list, not {0}.'.format(type(check_params)))
 
         # Main dictionary for config file.
         config_dict = {}
