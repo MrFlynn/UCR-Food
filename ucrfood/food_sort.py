@@ -15,9 +15,10 @@ class FoodSort(object):
     - sort_data : parses the tree and returns an object sorted by menu_section -> dining hall food section -> menu item.
     - add_base_data : adds useful data to object and sets up structure of object.
     """
-    def __init__(self, url: str):
+    def __init__(self, url: str, check_data: bool = True):
         # Initial class variables.
         self.url = url
+        self.check_data = check_data # Do you want data validity checks?
         self.daily_menu = None
         self.tree_data = {}
 
@@ -35,6 +36,12 @@ class FoodSort(object):
         - Check to make sure url is correct.
         - Check to make sure url has correct query strings
         """
+
+        # Checks to make sure this function should be run.
+        if self.check_data:
+            pass
+        else:
+            return
 
         # Make sure self.url is a string and not a number or something...
         if isinstance(self.url, str):
