@@ -1,0 +1,11 @@
+[DB_INFO]
+DBName = ucrfood
+DBUsername = admin
+
+[CONNECTION]
+Host =
+Port =
+
+[AUTH]
+Enabled =
+DBPassword =
