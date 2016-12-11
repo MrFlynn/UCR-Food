@@ -32,26 +32,8 @@ class FoodSort(object):
 
     def check_url_format(self):
         """
-        Function to make sure input data is of correct type and has all the right information.
-
-        Steps:
-        - Check to make sure the self.url is a str.
-        - Check to make sure url is correct.
-        - Check to make sure url has correct query strings
+        Function checks to make sure url has correct query strings.
         """
-
-        # Make sure self.url is a string and not a number or something...
-        if isinstance(self.url, str):
-            pass
-        else:
-            raise TypeError('Passed url is not a string.')
-
-        # Website location and path.
-        base_url = urlparse(self.url).netloc + urlparse(self.url).path
-
-        # Check to make sure the url is correct.
-        if base_url != '138.23.12.141/foodpro/shortmenu.asp':
-            raise Exception('URL location incorrect.')
 
         # List of url parameters to check.
         url_parameters = ['dtdate', 'locationNum', 'locationName']
