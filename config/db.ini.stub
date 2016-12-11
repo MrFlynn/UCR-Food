@@ -7,5 +7,5 @@ Host =
 Port =
 
 [AUTH]
-Enabled =
+AuthEnabled =
 DBPassword =
