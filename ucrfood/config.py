@@ -7,7 +7,7 @@ class Config(object):
     """
     Description: reading configuration file and returning compiled information from said file.
     Methods:
-    - check_against_config : reads configuration file and performs various tests on file.
+    - _check_against_config : reads configuration file and performs various tests on file.
     - construct_url : creates the urls needed for other classes based on constructs in configuration file.
     """
     def __init__(self, filename: str, config_dir: str = './config'):
@@ -18,7 +18,7 @@ class Config(object):
         # Read configuration file.
         self.config.read(self.config_file)
 
-    def check_against_config(self, params: list):
+    def _check_against_config(self, params: list):
         """
         Reads the configuration file. Checks if file exists and is not empty; returns
         exception if either check is false. Then it makes sure to check the parameters
@@ -75,7 +75,7 @@ class Config(object):
 
         if check_params:
             if type(check_params) is list:
-                self.check_against_config(check_params)
+                self._check_against_config(check_params)
             else:
                 raise TypeError('Check_params should be a list, not {0}.'.format(type(check_params)))
 
