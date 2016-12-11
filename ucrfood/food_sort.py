@@ -22,8 +22,11 @@ class FoodSort(object):
         self.daily_menu = None
         self.tree_data = {}
 
-        # Check URL to make sure it is correct:
-        self.check_url_format()
+        # Check if function should be run. If it should, check validity of passed URL.:
+        if check_data:
+            self.check_url_format()
+        else:
+            pass
         # Generates header info for daily_menu object:
         self.add_base_data()
 
@@ -36,12 +39,6 @@ class FoodSort(object):
         - Check to make sure url is correct.
         - Check to make sure url has correct query strings
         """
-
-        # Checks to make sure this function should be run.
-        if self.check_data:
-            pass
-        else:
-            return
 
         # Make sure self.url is a string and not a number or something...
         if isinstance(self.url, str):
