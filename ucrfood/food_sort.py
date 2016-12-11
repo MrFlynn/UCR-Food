@@ -11,9 +11,9 @@ class FoodSort(object):
     """
     Description: grabs dining hall menu web page and restructures it to an object format.
     Methods:
-    - daily_menu_tree : grabs the web page, generated the tree, and returns the menu sections.
+    - _daily_menu_tree : grabs the web page, generated the tree, and returns the menu sections.
     - sort_data : parses the tree and returns an object sorted by menu_section -> dining hall food section -> menu item.
-    - add_base_data : adds useful data to object and sets up structure of object.
+    - _add_base_data : adds useful data to object and sets up structure of object.
     """
     def __init__(self, url: str, check_data: bool = True):
         # Initial class variables.
@@ -24,13 +24,13 @@ class FoodSort(object):
 
         # Check if function should be run. If it should, check validity of passed URL.:
         if check_data:
-            self.check_url_format()
+            self._check_url_format()
         else:
             pass
         # Generates header info for daily_menu object:
-        self.add_base_data()
+        self._add_base_data()
 
-    def check_url_format(self):
+    def _check_url_format(self):
         """
         Function checks to make sure url has correct query strings.
         """
@@ -47,7 +47,7 @@ class FoodSort(object):
             else:
                 raise Exception('URL does not contain proper query strings.')
 
-    def add_base_data(self) -> object:
+    def _add_base_data(self) -> object:
         """
         Generates useful information for JSON object.
         - data : object containing parsed data from sort_data method.
@@ -73,7 +73,7 @@ class FoodSort(object):
         self.tree_data['source_url'] = quote(self.url, safe='')
         self.tree_data['menu_date'] = parse_qs(urlparse(self.url).query).get('dtdate')[0].replace('/', '-')
 
-    def daily_menu_tree(self) -> object:
+    def _daily_menu_tree(self) -> object:
         # Grabs web page and returns the tree.
 
         page = requests.get(self.url)
@@ -82,7 +82,7 @@ class FoodSort(object):
 
     def sort_data(self) -> dict:
         # Grab page and generate tree.
-        self.daily_menu_tree()
+        self._daily_menu_tree()
 
         for dining_section in self.daily_menu:
             # Resulting object-based data structure.
