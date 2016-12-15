@@ -4,7 +4,7 @@
 # user for password.
 if [[ $(id -u) != "0"]]; then
 	exec sudo "$0" "$@"
-	exit $
+	exit $?
 fi
 
 # Check if systemd exist. If it does, move service and timer into proper
