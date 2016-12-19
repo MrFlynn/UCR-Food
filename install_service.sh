@@ -14,3 +14,5 @@ if [[ $(pidof systemd) ]]; then
 else
 	cat # something else here
 fi
+
+echo 'It it recommended that you restart your system.'
