@@ -2,7 +2,7 @@
 
 # Check if script is run as root. If not, run again as root and prompt
 # user for password.
-if [[ $(id -u) != "0"]]; then
+if [[ $(id -u) != "0" ]]; then
 	exec sudo "$0" "$@"
 	exit $?
 fi
