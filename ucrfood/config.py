@@ -15,8 +15,11 @@ class Config(object):
         self.config_file = path.abspath(path.join(config_dir, filename))
         self.config = configparser.ConfigParser()
 
-        # Read configuration file.
+        # Read configuration file:
         self.config.read(self.config_file)
+
+        # Config dict:
+        self.config_dict = None
 
     def _check_against_config(self, params: list):
         """
@@ -50,13 +53,11 @@ class Config(object):
             if len(params) < len(config_keys):
                 # If user provided fewer args than exist in the file, warn them.
                 extra_args = ', '.join(list(set(config_keys) - set(params)))
-                warn_string = 'Some params matched file. Provided params did not include: {0}'.format(extra_args)
-                raise Warning(warn_string)
+                print('Some params matched file. Provided params did not include: {0}'.format(extra_args))
             else:
                 # If user provided arguments not found in the config file, warn them.
                 missing_args = ', '.join(list(set(params) - set(config_keys)))
-                warn_string = 'Some params matched file. These params did not: {0}'.format(missing_args)
-                raise Warning(warn_string)
+                print('Some params matched file. These params did not: {0}'.format(missing_args))
         else:
             raise Warning('No parameters passed exist in the config file.')
 
@@ -94,4 +95,4 @@ class Config(object):
             # Append section_dict to config_dict
             config_dict[config_section] = section_dict
 
-        return config_dict
+        self.config_dict = config_dict
