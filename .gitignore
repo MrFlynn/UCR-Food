@@ -3,3 +3,4 @@
 # Ignore pycharm configuration files.
 .idea/
 *.ini
+*.pyc
