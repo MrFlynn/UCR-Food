@@ -12,11 +12,12 @@ class Config(object):
     """
     def __init__(self, filename: str, config_dir: str = './config'):
         # Initialize class variables:
-        self.config_file = path.abspath(path.join(config_dir, filename))
+        self.config_file_path = path.abspath(path.join(config_dir, filename))
+        self.config_file = filename
         self.config = configparser.ConfigParser()
 
         # Read configuration file:
-        self.config.read(self.config_file)
+        self.config.read(self.config_file_path)
 
         # Config dict:
         self.config_dict = None
@@ -28,36 +29,41 @@ class Config(object):
         passed exist in the configuration file.
         """
 
+        # Make passed parameter list lowercase.
+        _params = [opt.lower() for opt in params]
+
         # Check if file exists and is not empty:
-        if path.exists(self.config_file) and path.getsize(self.config_file) > 0:
+        if path.exists(self.config_file_path) and path.getsize(self.config_file_path) > 0:
             pass
         else:
-            raise Exception('Configuration file does not exist.')
+            raise Exception('{0}: Configuration does not exist.'.format(self.config_file_path))
 
         # List of configuration keys.
         config_keys = []
 
         for section in self.config.sections():
             # Added options from configuration file. Duplicates don't matter.
-            config_keys.extend(self.config.options(section))
+            config_keys.extend([opt.lower() for opt in self.config.options(section)])
 
         # Remove duplicate items from the list.
         config_keys = list(OrderedDict.fromkeys(config_keys))
 
-        if config_keys == params:
+        if config_keys == _params:
             # Check if all parameters exist in config_keys list.
-            print("All items in the list are identical")
+            print("{0}: All parameters match.".format(self.config_file))
             pass
-        elif set(params).isdisjoint(config_keys):
+        elif set(_params).isdisjoint(config_keys):
             # Checks to make sure that some arguments exist.
-            if len(params) < len(config_keys):
+            if len(_params) < len(config_keys):
                 # If user provided fewer args than exist in the file, warn them.
-                extra_args = ', '.join(list(set(config_keys) - set(params)))
-                print('Some params matched file. Provided params did not include: {0}'.format(extra_args))
+                extra_args = ', '.join(list(set(config_keys) - set(_params)))
+                print('{0}: Extra parameters found in file: {1}'.format(self.config_file,
+                                                                        extra_args))
             else:
                 # If user provided arguments not found in the config file, warn them.
-                missing_args = ', '.join(list(set(params) - set(config_keys)))
-                print('Some params matched file. These params did not: {0}'.format(missing_args))
+                missing_args = ', '.join(list(set(_params) - set(config_keys)))
+                print('{0}: Some parameters to check against missing in file: {1}'.format(self.config_file,
+                                                                                          missing_args))
         else:
             raise Warning('No parameters passed exist in the config file.')
 
