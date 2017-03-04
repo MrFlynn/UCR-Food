@@ -4,3 +4,6 @@
 .idea/
 *.ini
 *.pyc
+
+# Ignore virtualenv folder.
+venv/
