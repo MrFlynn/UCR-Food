@@ -7,3 +7,6 @@
 
 # Ignore virtualenv folder.
 venv/
+
+# Macs are annoying.
+.DS_STORE
