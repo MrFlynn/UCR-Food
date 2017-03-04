@@ -18,7 +18,6 @@ class FoodSort(object):
     def __init__(self, url: str, check_data: bool = True):
         # Initial class variables.
         self.url = url
-        self.check_data = check_data  # Do you want data validity checks?
         self.daily_menu = None
         self.tree_data = {}
 
@@ -36,7 +35,7 @@ class FoodSort(object):
         """
 
         # List of url parameters to check.
-        url_parameters = ['dtdate', 'locationNum', 'locationName']
+        url_parameters = ['dtdate', 'locationnum', 'locationname']
         # Parse url for query strings.
         parsed_url = parse_qs(urlparse(self.url).query)
 
