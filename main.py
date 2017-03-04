@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import ucrfood
 
 
@@ -13,8 +15,7 @@ def main():
     db_config.construct_dict(check_params=['DBName',
                                            'DBUsername',
                                            'Host',
-                                           'Port,'
-                                           'AuthEnabled',
+                                           'Port,',
                                            'DBPassword'])
 
     # Generate and list URLS:
@@ -46,6 +47,16 @@ def main():
 
     # Initialize database connection:
     rd_database = ucrfood.Database(*db_init_args)
+
+    # Get menu from current date and push to database:
+    for loc in urls:
+        current_menu = ucrfood.FoodSort(loc, False)
+        current_menu.sort_data()
+        rd_database.add_menu_data(current_menu.tree_data)
+
+    # Print stuff out.
+    print(rd_database.get_menu_with_duration(0))
+
 
 # Run the application:
 if __name__ == '__main__':
