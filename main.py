@@ -22,7 +22,7 @@ def main():
                                            'DBPassword'])
 
     # Generate and list URLS:
-    urls = []
+    base_urls = []
 
     for key in location_config.config_dict:
         if key == 'MAIN':
@@ -39,7 +39,7 @@ def main():
             full_url = '{base}?{args}'.format(base=base_url,
                                               args=join_str.join(url_args))
 
-            urls.append(full_url)
+            base_urls.append(full_url)
 
     # Rethink config details:
     db_init_args = (db_config.config_dict.get('CONNECTION').get('host'),
@@ -51,10 +51,11 @@ def main():
     # Initialize database connection:
     rd_database = ucrfood.Database(*db_init_args)
 
+    # List of base_urls with all the proper dates parametrized.
     complete_urls = []
 
     # Get menus for the next two weeks and push to database:
-    for url in urls:
+    for url in base_urls:
         for i in range(15):
             # Get run date + timedelta:
             current_date = (datetime.now().date()
