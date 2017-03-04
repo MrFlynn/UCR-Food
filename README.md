@@ -18,7 +18,7 @@ Before you install, make sure you have at least `python3.4`, `pip`, and
 
 `$ python3 -m pip install virtualenv`
 
-## Install:
+## Running the Server:
 **WARNING:** Project isn't finished yet. Things *will not* work.
 
 First, create a virtualenv and enter it:
@@ -27,4 +27,8 @@ First, create a virtualenv and enter it:
 
 Next, install the dependencies:
 
-`$ make install`
+`(venv) $ make install`
+
+Finally, run the actual server:
+
+`(venv) $ ./main.py`
