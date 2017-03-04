@@ -10,17 +10,21 @@ Before you install, make sure you have at least `python3.4`, `pip`, and
 
 ### Linux:
 `$ [sudo] apt-get install python3 python3-pip`
+
 `$ [sudo] python3 -m pip install virtualenv`
 
 ### Mac OS:
 `$ brew install python3`
+
 `$ python3 -m pip install virtualenv`
 
 ## Install:
 **WARNING:** Project isn't finished yet. Things *will not* work.
 
 First, create a virtualenv and enter it:
+
 `$ virtualenv venv && source venv/bin/activate`
 
 Next, install the dependencies:
+
 `$ make install`
