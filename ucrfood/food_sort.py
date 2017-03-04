@@ -18,11 +18,11 @@ class FoodSort(object):
     def __init__(self, url: str, check_data: bool = True):
         # Initial class variables.
         self.url = url
-        self.check_data = check_data # Do you want data validity checks?
+        self.check_data = check_data  # Do you want data validity checks?
         self.daily_menu = None
         self.tree_data = {}
 
-        # Check if function should be run. If it should, check validity of passed URL.:
+        # Check if function should be run. If it should, check validity of passed URL:
         if check_data:
             self._check_url_format()
         else:
