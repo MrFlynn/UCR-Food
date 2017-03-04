@@ -56,5 +56,5 @@ class Database(object):
         start_date = str(datetime.now().date())
         end_date = str(datetime.now().date() + timedelta(days=day_delta))
 
-        return rdb.table('menu').between({'menu_date': start_date},
+        return rdb.table('menus').between({'menu_date': start_date},
                                          {'menu_date': end_date}).run(self.conn)
