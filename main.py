@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import ucrfood
+from datetime import datetime, timedelta
+from urllib.parse import quote_plus
 
 
 def main():
@@ -15,7 +17,7 @@ def main():
     db_config.construct_dict(check_params=['DBName',
                                            'DBUsername',
                                            'Host',
-                                           'Port,',
+                                           'Port',
                                            'DBPassword'])
 
     # Generate and list URLS:
@@ -48,15 +50,23 @@ def main():
     # Initialize database connection:
     rd_database = ucrfood.Database(*db_init_args)
 
-    # Get menu from current date and push to database:
-    for loc in urls:
-        current_menu = ucrfood.FoodSort(loc, False)
-        current_menu.sort_data()
-        rd_database.add_menu_data(current_menu.tree_data)
+    # Get menus for the next two weeks and push to database:
+    for url in urls:
+        for i in range(15):
+            # Get run date + timedelta:
+            current_date = (datetime.now().date()
+                            + timedelta(days=i)).strftime('%m/%d/%Y')
 
-    # Print stuff out.
-    print(rd_database.get_menu_with_duration(0))
+            # Construct the url with the new date:
+            current_url = '{base}&dtdate={date}'.format(base=url,
+                                                        date=quote_plus(current_date))
 
+            # Grab and sort the data from each url:
+            current_menu = ucrfood.FoodSort(current_url, False)
+            current_menu.sort_data()
+
+            # Push to the database:
+            rd_database.add_menu_data(current_menu.tree_data)
 
 # Run the application:
 if __name__ == '__main__':
