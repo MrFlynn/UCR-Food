@@ -14,12 +14,12 @@ class Database(object):
 
         # Connection
         self.conn = None
-        self.connect()
+        self._connect()
 
-    def connect(self):
+    def _connect(self):
         """
-        Connects to RethinkDB server. If no database password is provided, then connect without
-        authentication.
+        Connects to RethinkDB server. If no database password is provided,
+        then connect without authentication.
         """
 
         if not self.db_password:
@@ -56,4 +56,5 @@ class Database(object):
         start_date = str(datetime.now().date())
         end_date = str(datetime.now().date() + timedelta(days=day_delta))
 
-        rdb.table('menu').between({'menu_date': start_date}, {'menu_date': end_date}).run(self.conn)
+        return rdb.table('menu').between({'menu_date': start_date},
+                                         {'menu_date': end_date}).run(self.conn)
