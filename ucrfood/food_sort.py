@@ -65,13 +65,13 @@ class FoodSort(object):
         self.tree_data['location_data'] = {}
 
         # Add data as described above:
-        self.tree_data['location_data']['location_name'] = parse_qs(urlparse(self.url).query).get('locationName')[0]
-        self.tree_data['location_data']['location_num'] = parse_qs(urlparse(self.url).query).get('locationNum')[0]
+        self.tree_data['location_data']['location_name'] = parse_qs(urlparse(self.url).query).get('locationname')[0]
+        self.tree_data['location_data']['location_num'] = parse_qs(urlparse(self.url).query).get('locationnum')[0]
         self.tree_data['generated_time'] = str(datetime.now())
         self.tree_data['update_time'] = None
         self.tree_data['uuid'] = str(uuid.uuid4())
         self.tree_data['source_url'] = quote(self.url, safe='')
-        self.tree_data['menu_date'] = parse_qs(urlparse(self.url).query).get('dtdate')[0].replace('/', '-')
+        #self.tree_data['menu_date'] = parse_qs(urlparse(self.url).query).get('dtdate')[0].replace('/', '-')
 
     def _daily_menu_tree(self) -> object:
         # Grabs web page and returns the tree.
