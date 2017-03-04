@@ -3,6 +3,7 @@
 import ucrfood
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
+from multiprocessing import Pool
 
 
 def main():
@@ -50,6 +51,8 @@ def main():
     # Initialize database connection:
     rd_database = ucrfood.Database(*db_init_args)
 
+    complete_urls = []
+
     # Get menus for the next two weeks and push to database:
     for url in urls:
         for i in range(15):
@@ -61,12 +64,16 @@ def main():
             current_url = '{base}&dtdate={date}'.format(base=url,
                                                         date=quote_plus(current_date))
 
-            # Grab and sort the data from each url:
-            current_menu = ucrfood.FoodSort(current_url, False)
-            current_menu.sort_data()
+            complete_urls.append(current_url)
 
-            # Push to the database:
-            rd_database.add_menu_data(current_menu.tree_data)
+    with Pool(processes=4) as pool:
+        # Grab and sort the data from each url:
+
+        results = [pool.apply_async(ucrfood.FoodSort, (i, )) for i in complete_urls]
+
+        # Push to the database:
+        for item in results:
+            rd_database.add_menu_data(item.get().tree_data)
 
 # Run the application:
 if __name__ == '__main__':
