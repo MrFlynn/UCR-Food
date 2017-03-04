@@ -10,3 +10,6 @@ venv/
 
 # Macs are annoying.
 .DS_STORE
+
+# Ignore RethinkDB stuff.
+rethinkdb_data/
