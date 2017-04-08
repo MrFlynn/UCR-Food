@@ -82,8 +82,8 @@ def main():
     for url in base_urls:
         for i in range(15):
             # Get run date + timedelta:
-            current_date = quote_plus(datetime.now().date() +
-                                      timedelta(days=i)).strftime('%m/%d/%Y')
+            current_date = quote_plus((datetime.now().date() +
+                                      timedelta(days=i)).strftime('%m/%d/%Y'))
 
             # Construct the url with the new date:
             current_url = '{base}&dtdate={date}'.format(base=url,
