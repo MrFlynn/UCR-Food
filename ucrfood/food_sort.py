@@ -107,7 +107,11 @@ class FoodSort(object):
                         count = 1
 
                         try:
-                            if unordered_items[idx + count][:2] != '--':
+                            if not unordered_items[idx + count]:
+                                # Skip empty elements.
+                                count += 1
+                                continue
+                            elif unordered_items[idx + count][:2] != '--':
                                 # Remove duplicate whitespaces & strip extraneous & most special characters:
                                 sub_menu_items.append(re.sub(' +', ' ',
                                                              re.sub('[^a-zA-Z0-9-() *.]', '',
