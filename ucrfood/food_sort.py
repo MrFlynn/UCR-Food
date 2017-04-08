@@ -1,7 +1,7 @@
 # Imports:
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs, quote
-from lxml import html
+from bs4 import BeautifulSoup
 import requests
 import uuid
 import re
@@ -80,8 +80,8 @@ class FoodSort(object):
         # Grabs web page and returns the tree.
 
         page = requests.get(self.url)
-        html_tree = html.fromstring(page.content)
-        self.daily_menu = html_tree.findall('.//td[@width="30%"]')
+        html_tree = BeautifulSoup(page.content, 'html.parser')
+        self.daily_menu = html_tree.find_all('td', attrs={'width': '30%'})
 
     def sort_data(self) -> dict:
         # Grab page and generate tree.
@@ -90,16 +90,16 @@ class FoodSort(object):
         for dining_section in self.daily_menu:
             # Resulting object-based data structure.
             food_dict = {}
-            # Filters html tree for unsorted dining hall food sections/menu items.
-            unsorted_menu_items = dining_section.xpath('.//a[@name="Recipe_Desc"]/text()|\
-                                                        .//div[@class="shortmenucats"]/span/text()')
+            # Filters html_tree for section names and menu items. List comprehension gets the text from each
+            # element in the list.
+            unordered_items = [el.get_text() for el in dining_section.find_all(re.compile('a[name="Recipe_Desc"]'))]
 
             """
             Main loop:
             Filters menu items from dining hall food sections. Assigns menu items to respective
             dining hall food sections.
             """
-            for idx, item in enumerate(unsorted_menu_items):
+            for idx, item in enumerate(unordered_items):
                 if item[:2] == '--':
                     sub_menu_items = []
 
@@ -107,13 +107,13 @@ class FoodSort(object):
                         count = 1
 
                         try:
-                            if unsorted_menu_items[idx + count][:2] != '--':
+                            if unordered_items[idx + count][:2] != '--':
                                 # Remove duplicate whitespaces & strip extraneous & most special characters:
                                 sub_menu_items.append(re.sub(' +', ' ',
                                                              re.sub('[^a-zA-Z0-9-() *.]', '',
-                                                                    unsorted_menu_items[idx + count])))
+                                                                    unordered_items[idx + count])))
                                 # Delete item from master list.
-                                del unsorted_menu_items[idx + count]
+                                del unordered_items[idx + count]
                                 count += 1
                             else:
                                 break
@@ -125,5 +125,5 @@ class FoodSort(object):
                     food_dict[item[3:-3]] = sub_menu_items
 
             # Set tree data to food_dict.
-            self.tree_data['data'].append({'type': dining_section.find_class("shortmenumeals")[0].text.lower(),
+            self.tree_data['data'].append({'type': dining_section.find('div', attrs={'class': 'shortmenumeals'}),
                                            'content': food_dict})
