@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 
 import ucrfood
+import sys
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 from multiprocessing import Pool
+
+"""
+Set the recursion limit to prevent errors with multi threading.
+"""
+sys.setrecursionlimit(100000)
 
 
 """
@@ -71,8 +77,6 @@ def main():
     """
     Builds all urls with date parameters, grabs data from the site, and
     then uploads all data to the database.
-
-    todo: Figure out HTMLElement pickling problem.
     """
 
     # Urls with date objects:
