@@ -26,8 +26,12 @@ class FoodSort(object):
             self._check_url_format()
         else:
             pass
+
         # Generates header info for daily_menu object:
         self._add_base_data()
+
+        # Automatically start sorting data when the constructor is called.
+        self.sort_data()
 
     def _check_url_format(self):
         """
@@ -105,10 +109,8 @@ class FoodSort(object):
                         try:
                             if unsorted_menu_items[idx + count][:2] != '--':
                                 # Remove duplicate whitespaces & strip extraneous & most special characters:
-                                sub_menu_items.append(re.sub(' +',
-                                                             ' ',
-                                                             re.sub('[^a-zA-Z0-9-() *.]',
-                                                                    '',
+                                sub_menu_items.append(re.sub(' +', ' ',
+                                                             re.sub('[^a-zA-Z0-9-() *.]', '',
                                                                     unsorted_menu_items[idx + count])))
                                 # Delete item from master list.
                                 del unsorted_menu_items[idx + count]
