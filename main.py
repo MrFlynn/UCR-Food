@@ -12,22 +12,11 @@ Set the recursion limit to prevent errors with multi threading.
 sys.setrecursionlimit(100000)
 
 
-"""
-Global variables for main function:
-"""
-
-# Sets database variable to null.
-app_db = None
-
-# Bases for urls to use during runtime.
-base_urls = []
-
-
-def _construct():
+def _construct_base_urls():
     """
-    Description: runs when application is first starts up. Opens configuration
-    files, constructs the list of urls from which to pull data, and then
-    build the database connection.
+    Description: runs when application is first starts up. Opens 
+    the location configuration file and constructs the list of 
+    urls from which to pull data.
     """
 
     # Location configuration
@@ -36,13 +25,8 @@ def _construct():
                                                  'LocationNum',
                                                  'LocationName'])
 
-    # Rethink configuration
-    db_config = ucrfood.Config('db.ini')
-    db_config.construct_dict(check_params=['DBName',
-                                           'DBUsername',
-                                           'Host',
-                                           'Port',
-                                           'DBPassword'])
+    # Bases for urls to use during runtime.
+    base_urls = []
 
     # Construct base urls
     for key in location_config.config_dict:
@@ -62,6 +46,23 @@ def _construct():
 
             base_urls.append(full_url)
 
+    return base_urls
+
+
+def _construct_database_conn():
+    """
+    Description: runs when application is first starts up. Opens 
+    the database configuration file and then build the database connection. 
+    """
+
+    # Rethink configuration
+    db_config = ucrfood.Config('db.ini')
+    db_config.construct_dict(check_params=['DBName',
+                                           'DBUsername',
+                                           'Host',
+                                           'Port',
+                                           'DBPassword'])
+
     # RethinkDB connection details:
     db_init_args = (db_config.config_dict.get('CONNECTION').get('host'),
                     db_config.config_dict.get('CONNECTION').get('port'),
@@ -70,7 +71,7 @@ def _construct():
                     db_config.config_dict.get('AUTH').get('dbpassword'))
 
     # Initialize database connection:
-    app_db = ucrfood.Database(*db_init_args)
+    return ucrfood.Database(*db_init_args)
 
 
 def main():
@@ -107,5 +108,11 @@ def main():
 if __name__ == '__main__':
     # todo: have main function run within a scheduler.
 
-    _construct()
+    # Set the list of base urls as the result of the below function.
+    base_urls = _construct_base_urls()
+
+    # Set the database connection as the result of the below function.
+    app_db = _construct_database_conn()
+
+    # Main function.
     main()
