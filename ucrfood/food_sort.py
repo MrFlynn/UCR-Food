@@ -129,6 +129,5 @@ class FoodSort(object):
                     food_dict[item[3:-3]] = sub_menu_items
 
             # Set tree data to food_dict.
-            self.tree_data['data'].append({'type': dining_section.find('div',
-                                                                       attrs={'class': 'shortmenumeals'}).get_text(),
+            self.tree_data['data'].append({'type': dining_section.find('div', class_='shortmenumeals').get_text(),
                                            'content': food_dict})
