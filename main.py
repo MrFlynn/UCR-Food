@@ -5,6 +5,7 @@ import sys
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 from multiprocessing import Pool
+from multiprocessing import cpu_count
 
 """
 Set the recursion limit to prevent errors with multi threading.
@@ -96,7 +97,7 @@ def main():
 
             runtime_urls.append(current_url)
 
-    with Pool(processes=4) as pool:
+    with Pool(processes=(cpu_count() * 2)) as pool:
         # Grab and sort the data from each url:
         results = [pool.apply_async(ucrfood.FoodSort, (i, )) for i in runtime_urls]
 
