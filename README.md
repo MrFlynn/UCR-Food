@@ -22,14 +22,14 @@ need [homebrew](brew.sh).
 ## Running the Server:
 **WARNING:** Project isn't finished yet. Things *will not* work.
 
-First, create a virtualenv and enter it:
+To get setup, simply run the `rethinkdb` database (preferably in the 
+same directory) *first* and then run the actual server (shown below). 
+Several scripts and a Makefile have been created to facilitate this.
 
-`$ virtualenv -p $(which python3) venv && source venv/bin/activate`
-
-Next, install the dependencies:
-
-`(venv) $ make install`
-
-Finally, run the actual server:
-
-`(venv) $ ./main.py`
+```bash
+$ cd UCR-Food/
+$ make configure
+$ source venv/bin/activate
+(venv) $ make install
+(venv) $ ./main.py
+```
