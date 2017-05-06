@@ -12,13 +12,11 @@ need [homebrew](brew.sh).
 ### Linux:
 ```bash
 $ apt-get install python3 python3-pip rethinkdb
-$ python3 -m pip install virtualenv
 ```
 
 ### Mac OS:
 ```bash
 $ brew install python3 rethinkdb
-$ python3 -m pip install virtualenv
 ```
 
 ## Running the Server:
