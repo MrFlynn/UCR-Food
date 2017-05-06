@@ -10,14 +10,16 @@ Before you install, make sure you have at least `python3.4`, `pip3`,
 need [homebrew](brew.sh).
 
 ### Linux:
-`$ [sudo] apt-get install python3 python3-pip rethinkdb`
-
-`$ [sudo] python3 -m pip install virtualenv`
+```bash
+$ apt-get install python3 python3-pip rethinkdb
+$ python3 -m pip install virtualenv
+```
 
 ### Mac OS:
-`$ brew install python3 rethinkdb`
-
-`$ python3 -m pip install virtualenv`
+```bash
+$ brew install python3 rethinkdb
+$ python3 -m pip install virtualenv
+```
 
 ## Running the Server:
 **WARNING:** Project isn't finished yet. Things *will not* work.
