@@ -1,7 +1,10 @@
-from urllib.parse import urlparse, parse_qs, quote
 from typing import TypeVar, Generic
-from datetime import datetime
+
+from urllib.parse import urlparse, parse_qs, quote
 from requests import get
+
+from datetime import datetime
+
 from hashlib import md5
 from re import sub
 
