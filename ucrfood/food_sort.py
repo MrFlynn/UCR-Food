@@ -1,24 +1,28 @@
 from typing import TypeVar, Generic
+from datetime import datetime
+from hashlib import md5
 
 from urllib.parse import urlparse, parse_qs, quote
 from requests import get
 
-from datetime import datetime
+from bs4 import BeautifulSoup
+from re import sub, compile
 
-from hashlib import md5
-from re import sub
+from multiprocessing import Pool, cpu_count
 
 
 class FoodSort:
-    url_types = TypeVar('url_types', str, list)
+    url_types = TypeVar('url_types', str, dict, list)
 
     def __init__(self, urls: Generic[url_types], check_data: bool):
         self.__serialized_menus = []
 
         if isinstance(urls, str):
-            self.__urls = [{'url': urls, 'content': None}]
+            self.__urls = [{'url': urls, 'sum': None, 'content': None}]
+        elif isinstance(urls, dict):
+            self.__urls = [urls.update({'content': None})]
         elif isinstance(urls, list):
-            self.__urls = [{'url': i, 'content': None} for i in urls]
+            self.__urls = [i.update({'content': None}) for i in urls]
         else:
             raise TypeError('Url is not an instance or list or str.')
 
@@ -85,7 +89,7 @@ class FoodSort:
         serial = dict()
 
         # Create empty list with menus.
-        serial['menus'] = []
+        serial['menus'] = None
 
         # Create sub duct with location name and number.
         serial['location'] = {}
@@ -102,6 +106,77 @@ class FoodSort:
 
         # Source url and page sum.
         serial['url'] = quote(url_entry.get('url'), safe='')
-        serial['sum'] = self.__get_page_sum(url_entry.get('content'))
+        serial['sum'] = self.__get_page_sum(''.join(url_entry.get('content')))
 
         return serial
+
+    def __serialize_menu(self, url_entry: dict) -> list:
+        """Parses the the menu web page for menu items and returns them in list form.
+
+        :param url_entry: dict containing the page content.
+        :return: list of menu items for each dining time (i.e. breakfast, lunch, & dinner).
+        """
+        html_tree = BeautifulSoup(url_entry.get('content'), 'html.parser')
+        menu_entries = html_tree.find_all('td', attrs={'width': '30%'})
+
+        menus = []
+
+        for entry in menu_entries:
+            menu_dict = dict()
+            menu_items = [el.get_text() for el in entry.find_all(compile('a[name="Recipe_Desc"]'))]
+
+            for idx, item in enumerate(menu_items):
+                if item[:2] == '--':
+                    sub_menu_items = []
+
+                    while True:
+                        count = 1
+
+                        try:
+                            if not menu_items[idx + count]:
+                                count += 1
+                                continue
+                            elif menu_items[idx + count][:2] != '--':
+                                sub_menu_items.append(
+                                    self.__strip_characters(menu_items[idx + count]))
+
+                                del menu_items[idx + count]
+                                count += 1
+                            else:
+                                break
+                        except IndexError:
+                            break
+
+                    menu_dict[item[3:-3]] = sub_menu_items
+
+            menus.append({'type': entry.find('div', class_='shortmenumeals').get_text(),
+                         'content': menu_dict})
+
+        return menus
+
+    def __get_menu(self, url_entry: dict) -> dict:
+        """Checks if the supplied md5sum is the same as the one for the page being processed. If it
+        is, skip parsing.
+
+        :param url_entry: dict containing url, page content, and page sum.
+        :return: list containing menu items from each dining section.
+        """
+
+        # Sets the content of the page in the url_entry dict.
+        url_entry['content'] = self.__pull_page(url_entry.get('url'))
+
+        # Create the dictionary using the __create_single_menu_serial method.
+        menu_dict = self.__create_single_menu_serial(url_entry)
+
+        # If the entry's md5sum is not the same, then process the page.
+        if menu_dict['sum'] != url_entry.get('sum'):
+            menu_dict['menus'] = self.__serialize_menu(url_entry)
+            return menu_dict
+
+    def get_menus(self):
+        """Processes list of urls using as many threads as possible.
+
+        :return: N/A
+        """
+        with Pool(processes=cpu_count()) as pool:
+            self.__serialized_menus = [pool.apply_async(self.__get_menu, i) for i in self.__urls]
