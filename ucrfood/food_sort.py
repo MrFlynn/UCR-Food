@@ -3,6 +3,7 @@ from typing import TypeVar, Generic
 from datetime import datetime
 from requests import get
 from hashlib import md5
+from re import sub
 
 
 class FoodSort:
@@ -53,6 +54,16 @@ class FoodSort:
         :return: parameter set value.
         """
         return parse_qs(urlparse(url).query).get(parameter)[index]
+
+    @staticmethod
+    def __strip_characters(input: str) -> str:
+        """Strips non alphanumeric characters and any duplicate whitespace.
+
+        :param input: string to clean.
+        :return: cleaned string.
+        """
+        filter_step = sub('[^a-zA-Z0-9-() *.]', '', input)
+        return sub(' +', ' ', filter_step)
 
     def __create_single_menu_serial(self, url_entry: dict) -> dict:
         """Creates base dictionary with menus, location date, time data, url, and page sum.
