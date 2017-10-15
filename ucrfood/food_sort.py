@@ -10,7 +10,6 @@ class FoodSort:
     url_types = TypeVar('url_types', str, list)
 
     def __init__(self, urls: Generic[url_types], check_data: bool):
-        self.__menu_objects = []
         self.__serialized_menus = []
 
         if isinstance(urls, str):
@@ -56,14 +55,22 @@ class FoodSort:
         return parse_qs(urlparse(url).query).get(parameter)[index]
 
     @staticmethod
-    def __strip_characters(input: str) -> str:
+    def __strip_characters(input_str: str) -> str:
         """Strips non alphanumeric characters and any duplicate whitespace.
 
-        :param input: string to clean.
+        :param input_str: string to clean.
         :return: cleaned string.
         """
-        filter_step = sub('[^a-zA-Z0-9-() *.]', '', input)
+        filter_step = sub('[^a-zA-Z0-9-() *.]', '', input_str)
         return sub(' +', ' ', filter_step)
+
+    @property
+    def menus(self):
+        """Returns list of dictionaries containing menu data.
+
+        :return: list of dictionaries.
+        """
+        return self.__serialized_menus
 
     def __create_single_menu_serial(self, url_entry: dict) -> dict:
         """Creates base dictionary with menus, location date, time data, url, and page sum.
@@ -95,4 +102,3 @@ class FoodSort:
         serial['sum'] = self.__get_page_sum(url_entry.get('content'))
 
         return serial
-
