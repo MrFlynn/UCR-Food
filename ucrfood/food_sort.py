@@ -8,13 +8,13 @@ from requests import get
 from bs4 import BeautifulSoup
 from re import sub, compile
 
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Process, Pool, cpu_count
 
 
 class FoodSort:
     url_types = TypeVar('url_types', str, dict, list)
 
-    def __init__(self, urls: Generic[url_types], check_data: bool):
+    def __init__(self, urls: Generic[url_types]):
         self.__serialized_menus = []
 
         if isinstance(urls, str):
@@ -59,7 +59,10 @@ class FoodSort:
         :param index: index in resulting list from getting parse_qs dict.
         :return: parameter set value.
         """
-        return parse_qs(urlparse(url).query).get(parameter)[index]
+        try:
+            return parse_qs(urlparse(url).query).get(parameter)[index]
+        except IndexError:
+            return str()
 
     @staticmethod
     def __strip_characters(input_str: str) -> str:
@@ -93,8 +96,8 @@ class FoodSort:
 
         # Create sub duct with location name and number.
         serial['location'] = {}
-        serial['location']['name'] = self.__get_parameters(url_entry.get('url'), 'locationname', 0)
-        serial['location']['num'] = self.__get_parameters(url_entry.get('url'), 'locationnum', 0)
+        serial['location']['name'] = self.__get_parameters(url_entry.get('url'), 'locationName', 0)
+        serial['location']['num'] = self.__get_parameters(url_entry.get('url'), 'locationNum', 0)
 
         # Create sub dict with generation, update time and menu date.
         serial['time_info'] = {}
@@ -106,7 +109,7 @@ class FoodSort:
 
         # Source url and page sum.
         serial['url'] = quote(url_entry.get('url'), safe='')
-        serial['sum'] = self.__get_page_sum(''.join(url_entry.get('content')))
+        serial['sum'] = self.__get_page_sum(url_entry.get('content'))
 
         return serial
 
@@ -116,41 +119,41 @@ class FoodSort:
         :param url_entry: dict containing the page content.
         :return: list of menu items for each dining time (i.e. breakfast, lunch, & dinner).
         """
+
+        # Generate the page tree and find all sections containing items on the menu.
         html_tree = BeautifulSoup(url_entry.get('content'), 'html.parser')
         menu_entries = html_tree.find_all('td', attrs={'width': '30%'})
 
+        # Breakfast, lunch, and dinner menus.
         menus = []
 
         for entry in menu_entries:
-            menu_dict = dict()
-            menu_items = [el.get_text() for el in entry.find_all(compile('a[name="Recipe_Desc"]'))]
+            # Subsections from each menu time with menu entries and the working section.
+            menu_sections = dict()
+            current_section = None
 
-            for idx, item in enumerate(menu_items):
+            # Get text only from all elements within the page tree.
+            sec_items = [el.get_text() for el in entry.find_all(compile('a[name="Recipe_Desc"]'))]
+
+            for item in sec_items:
                 if item[:2] == '--':
-                    sub_menu_items = []
+                    # If the item starts with '--' in the name, this is the working section.
+                    section_name = item[3:-3]
 
-                    while True:
-                        count = 1
+                    # Set working section and update menu_sections dictionary.
+                    current_section = section_name
+                    menu_sections.update({section_name: []})
+                else:
+                    # Remove extraneous characters from menu item.
+                    menu_item = self.__strip_characters(item)
 
-                        try:
-                            if not menu_items[idx + count]:
-                                count += 1
-                                continue
-                            elif menu_items[idx + count][:2] != '--':
-                                sub_menu_items.append(
-                                    self.__strip_characters(menu_items[idx + count]))
+                    # Append to list if not an empty string.
+                    if menu_item:
+                        menu_sections.get(current_section).append(menu_item)
 
-                                del menu_items[idx + count]
-                                count += 1
-                            else:
-                                break
-                        except IndexError:
-                            break
-
-                    menu_dict[item[3:-3]] = sub_menu_items
-
+            # Append all the menu sections to the menu.
             menus.append({'type': entry.find('div', class_='shortmenumeals').get_text(),
-                         'content': menu_dict})
+                          'content': menu_sections})
 
         return menus
 
@@ -169,7 +172,7 @@ class FoodSort:
         menu_dict = self.__create_single_menu_serial(url_entry)
 
         # If the entry's md5sum is not the same, then process the page.
-        if menu_dict['sum'] != url_entry.get('sum'):
+        if menu_dict['sum'] != url_entry.get('sum') or url_entry.get('sum') is None:
             menu_dict['menus'] = self.__serialize_menu(url_entry)
             return menu_dict
 
@@ -178,5 +181,17 @@ class FoodSort:
 
         :return: N/A
         """
-        with Pool(processes=cpu_count()) as pool:
-            self.__serialized_menus = [pool.apply_async(self.__get_menu, i) for i in self.__urls]
+
+        # processes = []
+        #
+        # for entry in self.__urls:
+        #     p = Process(target=self.__get_menu, args=(entry,))
+        #     processes.append(p)
+        #
+        # [x.start() for x in processes]
+
+        for entry in self.__urls:
+            self.__serialized_menus = self.__get_menu(entry)
+
+        #p = Pool(processes=cpu_count())
+        #self.__serialized_menus = p.map(self.__get_menu, self.__urls)
