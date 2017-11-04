@@ -1,133 +1,201 @@
-# Imports:
-from datetime import datetime
+import requests.exceptions as rexcept
+from requests import get
 from urllib.parse import urlparse, parse_qs, quote
 from bs4 import BeautifulSoup
-import requests
-import uuid
-import re
+from typing import TypeVar, Generic
+from datetime import datetime
+from hashlib import md5
+from re import sub, compile
+from multiprocessing import Process, Manager
 
 
-class FoodSort(object):
-    """
-    Description: grabs dining hall menu web page and restructures it to an object format.
-    Methods:
-    - _daily_menu_tree : grabs the web page, generated the tree, and returns the menu sections.
-    - sort_data : parses the tree and returns an object sorted by menu_section -> dining hall food section -> menu item.
-    - _add_base_data : adds useful data to object and sets up structure of object.
-    """
-    def __init__(self, url: str, check_data: bool = True):
-        # Initial class variables.
-        self.url = url
-        self.daily_menu = None
-        self.tree_data = {}
+class FoodSort:
+    url_types = TypeVar('url_types', str, dict, list)
 
-        # Check if function should be run. If it should, check validity of passed URL:
-        if check_data:
-            self._check_url_format()
+    def __init__(self, urls: Generic[url_types]):
+        # Special list that is accessible between threads.
+        self.__serialized_menus = Manager().list()
+
+        if isinstance(urls, str):
+            self.__urls = [{'url': urls, 'sum': None, 'content': None}]
+        elif isinstance(urls, dict):
+            self.__urls = [urls.update({'content': None})]
+        elif isinstance(urls, list):
+            self.__urls = [{'url': i, 'content': None} for i in urls]
         else:
-            pass
+            raise TypeError('Url is not an instance or list or str.')
 
-        # Generates header info for daily_menu object:
-        self._add_base_data()
+    @staticmethod
+    def __pull_page(url: str) -> str:
+        """Gets the page from the given url and returns the page content.
 
-        # Automatically start sorting data when the constructor is called.
-        self.sort_data()
-
-    def _check_url_format(self):
+        :param url: url to get page content from.
+        :return: page content.
         """
-        Function checks to make sure url has correct query strings.
+        try:
+            return get(url).content
+        except rexcept.ConnectionError:
+            return str()
+
+    @staticmethod
+    def __get_page_sum(page_content: str) -> str:
+        """Given a string containing the relevant page content, return the md5sum of said page.
+        This is helpful for not parsing the page again when a copy exists in the database.
+
+        :param page_content: string representing the page content.
+        :return: md5sum of page_content.
+        """
+        m = md5()
+
+        # Update the md5 parser with the content of the page and return the hex digest.
+        m.update(page_content)
+        return m.hexdigest()
+
+    @staticmethod
+    def __get_parameters(url: str, parameter: str, index: int) -> str:
+        """Gets a specific parameter from the given url.
+
+        :param url: url to parse.
+        :param parameter: parameter to get from url.
+        :param index: index in resulting list from getting parse_qs dict.
+        :return: parameter set value.
+        """
+        try:
+            return parse_qs(urlparse(url).query).get(parameter)[index]
+        except IndexError:
+            return str()
+
+    @staticmethod
+    def __strip_characters(input_str: str) -> str:
+        """Strips non alphanumeric characters and any duplicate whitespace.
+
+        :param input_str: string to clean.
+        :return: cleaned string.
+        """
+        filter_step = sub('[^a-zA-Z0-9-() *.]', '', input_str)
+        return sub(' +', ' ', filter_step)
+
+    @property
+    def menus(self):
+        """Returns list of dictionaries containing menu data.
+
+        :return: list of dictionaries.
         """
 
-        # List of url parameters to check.
-        url_parameters = ['dtdate', 'locationnum', 'locationname']
-        # Parse url for query strings.
-        parsed_url = parse_qs(urlparse(self.url).query)
+        # Cast the Manager list to native Python list.
+        return list(self.__serialized_menus)
 
-        # Check that all correct query strings are in passed url.
-        for parameter in url_parameters:
-            if parameter in parsed_url:
-                continue
-            else:
-                raise Exception('URL does not contain proper query strings.')
+    def __create_single_menu_serial(self, url_entry: dict) -> dict:
+        """Creates base dictionary with menus, location date, time data, url, and page sum.
 
-    def _add_base_data(self) -> object:
+        :param url_entry: dict containing page url and content.
+        :return: dictionary with data shown below.
         """
-        Generates useful information for JSON object.
-        - data : object containing parsed data from sort_data method.
-        - location_data :
-            - location_name : name of dining hall location.
-            - location_num : dining hall location number.
-        - generated_time : time the object was originally created.
-        - update_time : in case menu changes and object needs to be updated.
-        - source_url : encoded URL from which data was extracted.
-        - menu_date : date for menu.
+        # Declare dictionary.
+        serial = dict()
+
+        # Create empty list with menus.
+        serial['menus'] = None
+
+        # Create sub duct with location name and number.
+        serial['location'] = {}
+        serial['location']['name'] = self.__get_parameters(url_entry.get('url'), 'locationName', 0)
+        serial['location']['num'] = self.__get_parameters(url_entry.get('url'), 'locationNum', 0)
+
+        # Create sub dict with generation, update time and menu date.
+        serial['time_info'] = {}
+        serial['time_info']['gen'] = str(datetime.now())
+        serial['time_info']['update'] = None
+        serial['time_info']['menu_date'] = self.__get_parameters(url_entry.get('url'),
+                                                                 'dtdate',
+                                                                 0).replace('/', '-')
+
+        # Source url and page sum.
+        serial['url'] = quote(url_entry.get('url'), safe='')
+        serial['sum'] = self.__get_page_sum(url_entry.get('content'))
+
+        return serial
+
+    def __serialize_menu(self, url_entry: dict) -> list:
+        """Parses the the menu web page for menu items and returns them in list form.
+
+        :param url_entry: dict containing the page content.
+        :return: list of menu items for each dining time (i.e. breakfast, lunch, & dinner).
         """
 
-        # Create data lists/objects:
-        self.tree_data['data'] = []
-        self.tree_data['location_data'] = {}
+        # Generate the page tree and find all sections containing items on the menu.
+        html_tree = BeautifulSoup(url_entry.get('content'), 'html.parser')
+        menu_entries = html_tree.find_all('td', attrs={'width': '30%'})
 
-        # Add data as described above:
-        self.tree_data['location_data']['location_name'] = parse_qs(urlparse(self.url).query).get('locationname')[0]
-        self.tree_data['location_data']['location_num'] = parse_qs(urlparse(self.url).query).get('locationnum')[0]
-        self.tree_data['generated_time'] = str(datetime.now())
-        self.tree_data['update_time'] = None
-        self.tree_data['uuid'] = str(uuid.uuid4())
-        self.tree_data['source_url'] = quote(self.url, safe='')
-        self.tree_data['menu_date'] = parse_qs(urlparse(self.url).query).get('dtdate')[0].replace('/', '-')
+        # Breakfast, lunch, and dinner menus.
+        menus = []
 
-    def _daily_menu_tree(self) -> object:
-        # Grabs web page and returns the tree.
+        for entry in menu_entries:
+            # Subsections from each menu time with menu entries and the working section.
+            menu_sections = dict()
+            current_section = None
 
-        page = requests.get(self.url)
-        html_tree = BeautifulSoup(page.content, 'html.parser')
-        self.daily_menu = html_tree.find_all('td', attrs={'width': '30%'})
+            # Get text only from all elements within the page tree.
+            sec_items = [el.get_text() for el in entry.find_all(compile('a[name="Recipe_Desc"]'))]
 
-    def sort_data(self) -> dict:
-        # Grab page and generate tree.
-        self._daily_menu_tree()
-
-        for dining_section in self.daily_menu:
-            # Resulting object-based data structure.
-            food_dict = {}
-            # Filters html_tree for section names and menu items. List comprehension gets the text from each
-            # element in the list.
-            unordered_items = [el.get_text() for el in dining_section.find_all(re.compile('a[name="Recipe_Desc"]'))]
-
-            """
-            Main loop:
-            Filters menu items from dining hall food sections. Assigns menu items to respective
-            dining hall food sections.
-            """
-            for idx, item in enumerate(unordered_items):
+            for item in sec_items:
                 if item[:2] == '--':
-                    sub_menu_items = []
+                    # If the item starts with '--' in the name, this is the working section.
+                    section_name = item[3:-3]
 
-                    while True:
-                        count = 1
+                    # Set working section and update menu_sections dictionary.
+                    current_section = section_name
+                    menu_sections.update({section_name: []})
+                else:
+                    # Remove extraneous characters from menu item.
+                    menu_item = self.__strip_characters(item)
 
-                        try:
-                            if not unordered_items[idx + count]:
-                                # Skip empty elements.
-                                count += 1
-                                continue
-                            elif unordered_items[idx + count][:2] != '--':
-                                # Remove duplicate whitespaces & strip extraneous & most special characters:
-                                sub_menu_items.append(re.sub(' +', ' ',
-                                                             re.sub('[^a-zA-Z0-9-() *.]', '',
-                                                                    unordered_items[idx + count])))
-                                # Delete item from master list.
-                                del unordered_items[idx + count]
-                                count += 1
-                            else:
-                                break
-                        except IndexError:
-                            # When the end of the list is reached, stop the while loop.
-                            break
+                    # Append to list if not an empty string.
+                    if menu_item:
+                        menu_sections.get(current_section).append(menu_item)
 
-                    # Menu item to dining hall food section assignment.
-                    food_dict[item[3:-3]] = sub_menu_items
+            # Append all the menu sections to the menu.
+            menus.append({'type': entry.find('div', class_='shortmenumeals').get_text(),
+                          'content': menu_sections})
 
-            # Set tree data to food_dict.
-            self.tree_data['data'].append({'type': dining_section.find('div', class_='shortmenumeals').get_text(),
-                                           'content': food_dict})
+        return menus
+
+    def __get_menu(self, url_entry: dict):
+        """Checks if the supplied md5sum is the same as the one for the page being processed. If it
+        is, skip parsing.
+
+        :param url_entry: dict containing url, page content, and page sum.
+        :return: list containing menu items from each dining section.
+        """
+
+        # Sets the content of the page in the url_entry dict.
+        url_entry['content'] = self.__pull_page(url_entry.get('url'))
+
+        # Create the dictionary using the __create_single_menu_serial method.
+        menu_dict = self.__create_single_menu_serial(url_entry)
+
+        # If the entry's md5sum is not the same then serialize the page.
+        if menu_dict['sum'] != url_entry.get('sum') or url_entry.get('sum') is None:
+            menu_dict['menus'] = self.__serialize_menu(url_entry)
+
+            # Append to the manager list.
+            self.__serialized_menus.append(menu_dict)
+
+    def get_menus(self):
+        """Processes list of urls using as many threads as possible.
+
+        :return: N/A
+        """
+        # List of processes to run.
+        processes = []
+
+        # Append processes to process list.
+        for u in self.__urls:
+            p = Process(target=self.__get_menu, args=(u, ))
+            processes.append(p)
+
+        # Start and then kill the processes.
+        for p in processes:
+            p.start()
+        for p in processes:
+            p.join()
