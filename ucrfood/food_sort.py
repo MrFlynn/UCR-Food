@@ -8,14 +8,15 @@ from requests import get
 from bs4 import BeautifulSoup
 from re import sub, compile
 
-from multiprocessing import Process, Pool, cpu_count
+import multiprocessing
 
 
 class FoodSort:
     url_types = TypeVar('url_types', str, dict, list)
 
     def __init__(self, urls: Generic[url_types]):
-        self.__serialized_menus = []
+        # Special list that is accessible between threads.
+        self.__serialized_menus = multiprocessing.Manager().list()
 
         if isinstance(urls, str):
             self.__urls = [{'url': urls, 'sum': None, 'content': None}]
@@ -157,7 +158,7 @@ class FoodSort:
 
         return menus
 
-    def __get_menu(self, url_entry: dict) -> dict:
+    def __get_menu(self, url_entry: dict):
         """Checks if the supplied md5sum is the same as the one for the page being processed. If it
         is, skip parsing.
 
@@ -171,27 +172,28 @@ class FoodSort:
         # Create the dictionary using the __create_single_menu_serial method.
         menu_dict = self.__create_single_menu_serial(url_entry)
 
-        # If the entry's md5sum is not the same, then process the page.
+        # If the entry's md5sum is not the same then serialize the page.
         if menu_dict['sum'] != url_entry.get('sum') or url_entry.get('sum') is None:
             menu_dict['menus'] = self.__serialize_menu(url_entry)
-            return menu_dict
+
+            # Append to the manager list.
+            self.__serialized_menus.append(menu_dict)
 
     def get_menus(self):
         """Processes list of urls using as many threads as possible.
 
         :return: N/A
         """
+        # List of processes to run =.
+        processes = []
 
-        # processes = []
-        #
-        # for entry in self.__urls:
-        #     p = Process(target=self.__get_menu, args=(entry,))
-        #     processes.append(p)
-        #
-        # [x.start() for x in processes]
+        # Append processes to process list.
+        for u in self.__urls:
+            p = multiprocessing.Process(target=self.__get_menu, args=(u, ))
+            processes.append(p)
 
-        for entry in self.__urls:
-            self.__serialized_menus = self.__get_menu(entry)
-
-        #p = Pool(processes=cpu_count())
-        #self.__serialized_menus = p.map(self.__get_menu, self.__urls)
+        # Start and then kill the processes.
+        for p in processes:
+            p.start()
+        for p in processes:
+            p.join()
