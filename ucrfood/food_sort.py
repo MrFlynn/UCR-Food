@@ -1,14 +1,12 @@
+import requests.exceptions as rexcept
+from requests import get
+from urllib.parse import urlparse, parse_qs, quote
+from bs4 import BeautifulSoup
 from typing import TypeVar, Generic
 from datetime import datetime
 from hashlib import md5
-
-from urllib.parse import urlparse, parse_qs, quote
-from requests import get
-
-from bs4 import BeautifulSoup
 from re import sub, compile
-
-import multiprocessing
+from multiprocessing import Process, Manager
 
 
 class FoodSort:
@@ -16,7 +14,7 @@ class FoodSort:
 
     def __init__(self, urls: Generic[url_types]):
         # Special list that is accessible between threads.
-        self.__serialized_menus = multiprocessing.Manager().list()
+        self.__serialized_menus = Manager().list()
 
         if isinstance(urls, str):
             self.__urls = [{'url': urls, 'sum': None, 'content': None}]
@@ -34,8 +32,10 @@ class FoodSort:
         :param url: url to get page content from.
         :return: page content.
         """
-
-        return get(url).content
+        try:
+            return get(url).content
+        except rexcept.ConnectionError:
+            return str()
 
     @staticmethod
     def __get_page_sum(page_content: str) -> str:
@@ -81,7 +81,9 @@ class FoodSort:
 
         :return: list of dictionaries.
         """
-        return self.__serialized_menus
+
+        # Cast the Manager list to native Python list.
+        return list(self.__serialized_menus)
 
     def __create_single_menu_serial(self, url_entry: dict) -> dict:
         """Creates base dictionary with menus, location date, time data, url, and page sum.
@@ -184,12 +186,12 @@ class FoodSort:
 
         :return: N/A
         """
-        # List of processes to run =.
+        # List of processes to run.
         processes = []
 
         # Append processes to process list.
         for u in self.__urls:
-            p = multiprocessing.Process(target=self.__get_menu, args=(u, ))
+            p = Process(target=self.__get_menu, args=(u, ))
             processes.append(p)
 
         # Start and then kill the processes.
