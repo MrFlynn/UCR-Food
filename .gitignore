@@ -17,3 +17,6 @@ rethinkdb_data/
 # Ignore docker stuff for the moment.
 /Dockerfile
 /docker-compose.yml
+
+# Ignore testing scripts.
+*test.py
