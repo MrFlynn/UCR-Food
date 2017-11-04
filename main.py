@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
 
 import ucrfood
-import sys
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
-from multiprocessing import Pool
-from multiprocessing import cpu_count
-
-"""
-Set the recursion limit to prevent errors with multi threading.
-"""
-sys.setrecursionlimit(100000)
 
 
 def _construct_base_urls():
@@ -97,13 +89,11 @@ def main():
 
             runtime_urls.append(current_url)
 
-    with Pool(processes=(cpu_count() * 2)) as pool:
-        # Grab and sort the data from each url:
-        results = [pool.apply_async(ucrfood.FoodSort, (i, )) for i in runtime_urls]
+    f = ucrfood.FoodSort(runtime_urls)
+    f.get_menus()
+    for m in f.menus:
+        app_db.add_menu_data(m)
 
-        # Push to the database:
-        for item in results:
-            app_db.add_menu_data(item.get().tree_data)
 
 # Run the application:
 if __name__ == '__main__':
