@@ -99,8 +99,8 @@ class FoodSort:
 
         # Create sub duct with location name and number.
         serial['location'] = {}
-        serial['location']['name'] = self.__get_parameters(url_entry.get('url'), 'locationName', 0)
-        serial['location']['num'] = self.__get_parameters(url_entry.get('url'), 'locationNum', 0)
+        serial['location']['name'] = self.__get_parameters(url_entry.get('url'), 'locationname', 0)
+        serial['location']['num'] = self.__get_parameters(url_entry.get('url'), 'locationnum', 0)
 
         # Create sub dict with generation, update time and menu date.
         serial['time_info'] = {}
@@ -124,8 +124,8 @@ class FoodSort:
         """
 
         # Generate the page tree and find all sections containing items on the menu.
-        html_tree = BeautifulSoup(url_entry.get('content'), 'html.parser')
-        menu_entries = html_tree.find_all('td', attrs={'width': '30%'})
+        html_tree = BeautifulSoup(url_entry.get('content'), 'lxml')
+        menu_entries = html_tree.find_all('td', attrs={'width': ['50%', '30%']})
 
         # Breakfast, lunch, and dinner menus.
         menus = []
