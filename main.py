@@ -27,10 +27,10 @@ def _construct_base_urls():
             continue
         else:
             join_str = '&'
-            base_url = location_config.config_dict.get('MAIN').get('baseurl')
+            base_url = location_config.get('MAIN').get('baseurl')
             url_args = []
 
-            for inner_keys in location_config.config_dict.get(key).items():
+            for inner_keys in location_config.get(key).items():
                 arg_join_str = '='
                 url_args.append(arg_join_str.join(inner_keys))
 
@@ -57,11 +57,11 @@ def _construct_database_conn():
                                            'DBPassword'])
 
     # RethinkDB connection details:
-    db_init_args = (db_config.config_dict.get('CONNECTION').get('host'),
-                    db_config.config_dict.get('CONNECTION').get('port'),
-                    db_config.config_dict.get('DB_INFO').get('dbname'),
-                    db_config.config_dict.get('DB_INFO').get('dbusername'),
-                    db_config.config_dict.get('AUTH').get('dbpassword'))
+    db_init_args = (db_config.get('CONNECTION').get('host'),
+                    db_config.get('CONNECTION').get('port'),
+                    db_config.get('DB_INFO').get('dbname'),
+                    db_config.get('DB_INFO').get('dbusername'),
+                    db_config.get('AUTH').get('dbpassword'))
 
     # Initialize database connection:
     return ucrfood.Database(*db_init_args)
