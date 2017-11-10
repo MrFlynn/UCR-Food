@@ -5,7 +5,7 @@ This project is a bit of a pet project of mine. It has no real purpose
 other than for me to work on something.
 
 ## Requirements:
-Before you install, make sure you have at least `python3.4`, `pip3`, 
+Before you install, make sure you have at least `python3.6`, `pip3`, 
 `virtualenv`, and `RethinkDB` installed. If you have a Mac, you also 
 need [homebrew](brew.sh).
 
@@ -31,5 +31,5 @@ $ cd UCR-Food/
 $ make configure
 $ source venv/bin/activate
 (venv) $ make install
-(venv) $ ./main.py
+(venv) $ python3 app.py
 ```
