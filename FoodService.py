@@ -14,7 +14,7 @@ class FoodService:
         self.__url_conf = ucrfood.Config(url_conf)
 
         self.base_urls = []
-        self.__db_connection = None
+        self.__db_conn = None
 
     def __gen_base_urls(self):
         """Constructs the dictionary containing all of the url parameters and url base and then
@@ -47,10 +47,10 @@ class FoodService:
                                                     'Port',
                                                     'DBPassword'])
 
-        self.__db_connection.ucrfood.Database(host=self.__db_conf.get('CONNECTION').get('host'),
-                                              port=self.__db_conf.get('CONNECTION').get('port'),
-                                              uname=self.__db_conf.get('DB_INFO').get('dbusername'),
-                                              db_pass=self.__db_conf.get('AUTH').get('dbpassword'))
+        self.__db_conn = ucrfood.Database(host=self.__db_conf.get('CONNECTION').get('host'),
+                                          port=self.__db_conf.get('CONNECTION').get('port'),
+                                          uname=self.__db_conf.get('DB_INFO').get('dbusername'),
+                                          db_pass=self.__db_conf.get('AUTH').get('dbpassword'))
 
     def __gen_url_block(self):
         """Generates the complete list of URLs for the next 15 days and their corresponding date
@@ -85,4 +85,4 @@ class FoodService:
         # Serialize all menu pages and upload them to the database.
         menu_gen.get_menus()
         for m in menu_gen.menus:
-            self.__db_connection.add_menu_data(m)
+            self.__db_conn.add_menu_data(m)
