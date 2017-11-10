@@ -1,6 +1,6 @@
 configure:
 	@echo "--> Setting up virtualenv"
-	scripts/venv_installed.sh
+	./venv_installed.sh
 	@echo ""
 
 install:
