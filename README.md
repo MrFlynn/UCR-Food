@@ -29,7 +29,6 @@ $ apt-get install python3 python3-pip rethinkdb
 # Mac OS:
 $ brew install python3 rethinkdb
 
-
 # Finally, on your system run:
 $ python3 -m pip install virtualenv
 ```
@@ -53,9 +52,9 @@ same directory) *first* and then run the actual server (shown below).
 Several scripts and a Makefile have been created to facilitate this.
 
 ```bash
-$ cd UCR-Food/
+$ cd UCR-Food/virtualenv
 $ make configure
-$ source venv/bin/activate
+$ source ../venv/bin/activate
 (venv) $ make install
 (venv) $ python3 app.py
 ```
