@@ -42,19 +42,15 @@ class FoodService:
         """Constructs the dictionary containing all of the database settings and then initializes
         the connection.
         """
-        self.__db_conf.construct_dict(check_params=['DBName',
-                                                    'DBUsername',
+        self.__db_conf.construct_dict(check_params=['DBUsername',
                                                     'Host',
                                                     'Port',
                                                     'DBPassword'])
 
-        db_args = (self.__db_conf.get('CONNECTION').get('host'),
-                   self.__db_conf.get('CONNECTION').get('port'),
-                   self.__db_conf.get('DB_INFO').get('dbname'),
-                   self.__db_conf.get('DB_INFO').get('dbusername'),
-                   self.__db_conf.get('AUTH').get('dbpassword'))
-
-        self.__db_connection.ucrfood.Database(*db_args)
+        self.__db_connection.ucrfood.Database(host=self.__db_conf.get('CONNECTION').get('host'),
+                                              port=self.__db_conf.get('CONNECTION').get('port'),
+                                              uname=self.__db_conf.get('DB_INFO').get('dbusername'),
+                                              db_pass=self.__db_conf.get('AUTH').get('dbpassword'))
 
     def __gen_url_block(self):
         """Generates the complete list of URLs for the next 15 days and their corresponding date
