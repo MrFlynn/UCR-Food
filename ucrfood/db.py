@@ -19,6 +19,7 @@ class Database:
         self.port = port
         self.db_username = uname
         self.db_password = db_pass
+        self.table = 'ucrfood'
 
         # Connection
         self.conn = None
@@ -32,12 +33,12 @@ class Database:
         if not self.db_password:
             self.conn = rdb.connect(self.host,
                                     self.port,
-                                    'ucrfood',
+                                    self.table,
                                     self.db_username)
         else:
             self.conn = rdb.connect(self.host,
                                     self.port,
-                                    'ucrfood',
+                                    self.table,
                                     self.db_username,
                                     self.db_password)
 
