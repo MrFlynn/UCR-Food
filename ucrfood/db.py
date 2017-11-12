@@ -98,8 +98,8 @@ class Database:
         """
 
         # Create the start and end dates based on the current date and given timedelta.
-        start_date = str(datetime.now().date())
-        end_date = str(datetime.now().date() + timedelta(days=day_delta))
+        start_date = datetime.now().date().strftime('%m-%d-%Y')
+        end_date = (datetime.now().date() + timedelta(days=day_delta)).strftime('%m-%d-%Y')
 
         # If the index was not successfully generated, return an empty list.
         if not self.__generate_index('time_date'):
