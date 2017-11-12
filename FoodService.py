@@ -1,6 +1,6 @@
 import ucrfood
 from datetime import datetime, timedelta
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, unquote
 
 
 class FoodService:
@@ -77,22 +77,24 @@ class FoodService:
         self.__gen_base_urls()
         self.__gen_db_conn()
 
-        curr_menus = self.__db_conn.get_menu_with_duration(day_delta=15)
+        curr_menus = self.__db_conn.get_page_info_within_range(day_delta=15)
         block_urls = self.__gen_url_block()
+        final_urls = []
 
-        
+        for m in curr_menus:
+            unquoted_url = unquote(m.get('url'))
+            if unquoted_url in block_urls:
+                block_urls.remove(unquoted_url)
 
-    # def run(self):
-    #     """Runs the application.
-    #     """
-    #     # Generate base urls and create database connection:
-    #     self.__gen_base_urls()
-    #     self.__gen_db_conn()
-    #
-    #     # Instantiate menu processing code.
-    #     menu_gen = ucrfood.FoodSort(self.__gen_url_block())
-    #
-    #     # Serialize all menu pages and upload them to the database.
-    #     menu_gen.get_menus()
-    #     for m in menu_gen.menus:
-    #         self.__db_conn.add_menu_data(m)
+            final_urls.append({'sum': m.get('sum'), 'url': unquoted_url})
+
+        final_urls.extend([{'url': i} for i in block_urls])
+
+        menu_gen = ucrfood.FoodSort(final_urls)
+        menu_gen.get_menus()
+
+        for m in menu_gen.menus:
+            if m.get('time_info').get('update'):
+                self.__db_conn.update_menu_on_date(m.get('time_info').get('menu_date'))
+            else:
+                self.__db_conn.add_menu_data(m)
