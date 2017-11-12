@@ -73,16 +73,26 @@ class FoodService:
         return block_urls
 
     def run(self):
-        """Runs the application.
-        """
         # Generate base urls and create database connection:
         self.__gen_base_urls()
         self.__gen_db_conn()
 
-        # Instatiate menu processing code.
-        menu_gen = ucrfood.FoodSort(self.__gen_url_block())
+        curr_menus = self.__db_conn.get_menu_with_duration(day_delta=15)
+        block_urls = self.__gen_url_block()
 
-        # Serialize all menu pages and upload them to the database.
-        menu_gen.get_menus()
-        for m in menu_gen.menus:
-            self.__db_conn.add_menu_data(m)
+        
+
+    # def run(self):
+    #     """Runs the application.
+    #     """
+    #     # Generate base urls and create database connection:
+    #     self.__gen_base_urls()
+    #     self.__gen_db_conn()
+    #
+    #     # Instantiate menu processing code.
+    #     menu_gen = ucrfood.FoodSort(self.__gen_url_block())
+    #
+    #     # Serialize all menu pages and upload them to the database.
+    #     menu_gen.get_menus()
+    #     for m in menu_gen.menus:
+    #         self.__db_conn.add_menu_data(m)
