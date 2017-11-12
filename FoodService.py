@@ -1,4 +1,6 @@
 import ucrfood
+import time
+import sched
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus, unquote
 
@@ -111,3 +113,16 @@ class FoodService:
                 self.__db_conn.update_menu_on_date(m.get('time_info').get('menu_date'), m)
             else:
                 self.__db_conn.add_menu_data(m)
+
+    def run_schedule(self, interval: int = 12):
+        """Calls the run method every n hours based on the passed interval value.
+
+        :param interval: interval in hours. Default is 12 hours.
+        """
+        s = sched.scheduler(time.time, time.sleep)
+        s.enter(interval * 3600, 2, self.run)
+
+    def stop(self):
+        """Disconnects from the rethinkdb server.
+        """
+        self.__db_conn.disconnect()
