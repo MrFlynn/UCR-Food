@@ -29,16 +29,21 @@ class FoodSort:
             raise TypeError('Url is not an instance or list or str.')
 
     @staticmethod
-    def __pull_page(url: str) -> str:
-        """Gets the page from the given url and returns the page content.
+    def __pull_page(url: str) -> list:
+        """Gets the page from the given url and returns the page content required for parsing.
 
         :param url: url to get page content from.
-        :return: page content.
+        :return: list of lists of selected elements to parse.
         """
         try:
-            return get(url).content
+            # Download the contents of the page.
+            page_content = get(url).content
+
+            # Parse the page for the specific sections that need to be parsed.
+            html_tree = BeautifulSoup(page_content, 'lxml')
+            return html_tree.find_all('td', attrs={'width': ['50%', '30%']})
         except rexcept.ConnectionError:
-            return str()
+            return list()
 
     @staticmethod
     def __get_page_sum(page_content: str) -> str:
@@ -48,6 +53,7 @@ class FoodSort:
         :param page_content: string representing the page content.
         :return: md5sum of page_content.
         """
+        print(page_content)
         m = md5()
 
         # Update the md5 parser with the content of the page and return the hex digest.
@@ -115,7 +121,7 @@ class FoodSort:
 
         # Source url and page sum.
         serial['url'] = quote(url_entry.get('url'), safe='')
-        serial['sum'] = self.__get_page_sum(url_entry.get('content'))
+        serial['sum'] = self.__get_page_sum(''.join(''.join(i) for i in url_entry.get('content')))
 
         return serial
 
@@ -126,14 +132,10 @@ class FoodSort:
         :return: list of menu items for each dining time (i.e. breakfast, lunch, & dinner).
         """
 
-        # Generate the page tree and find all sections containing items on the menu.
-        html_tree = BeautifulSoup(url_entry.get('content'), 'lxml')
-        menu_entries = html_tree.find_all('td', attrs={'width': ['50%', '30%']})
-
         # Breakfast, lunch, and dinner menus.
         menus = []
 
-        for entry in menu_entries:
+        for entry in url_entry.get('content'):
             # Subsections from each menu time with menu entries and the working section.
             menu_sections = dict()
             current_section = None
@@ -174,12 +176,20 @@ class FoodSort:
         # Sets the content of the page in the url_entry dict.
         url_entry['content'] = self.__pull_page(url_entry.get('url'))
 
+        # If there is no page content just return.
+        if not url_entry.get('content'):
+            return
+
         # Create the dictionary using the __create_single_menu_serial method.
         menu_dict = self.__create_single_menu_serial(url_entry)
 
         # If the entry's md5sum is not the same then serialize the page.
         if menu_dict['sum'] != url_entry.get('sum') or url_entry.get('sum') is None:
             menu_dict['menus'] = self.__serialize_menu(url_entry)
+
+            # If the url entry already has a checksum, it means that the menu has been updated.
+            if url_entry.get('sum'):
+                menu_dict['time_info']['update'] = str(datetime.now())
 
             # Append to the manager list.
             self.__serialized_menus.append(menu_dict)
