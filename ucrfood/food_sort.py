@@ -21,7 +21,10 @@ class FoodSort:
         elif isinstance(urls, dict):
             self.__urls = [urls.update({'content': None})]
         elif isinstance(urls, list):
-            self.__urls = [{'url': i, 'content': None} for i in urls]
+            if all(isinstance(i, dict) for i in urls):
+                self.__urls = urls
+            else:
+                self.__urls = [{'url': i, 'content': None} for i in urls]
         else:
             raise TypeError('Url is not an instance or list or str.')
 
