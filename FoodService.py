@@ -16,6 +16,10 @@ class FoodService:
         self.base_urls = []
         self.__db_conn = None
 
+        # Generate base urls and create database connection.
+        self.__gen_base_urls()
+        self.__gen_db_conn()
+
     def __gen_base_urls(self):
         """Constructs the dictionary containing all of the url parameters and url base and then
         builds each base url.
@@ -73,28 +77,37 @@ class FoodService:
         return block_urls
 
     def run(self):
-        # Generate base urls and create database connection:
-        self.__gen_base_urls()
-        self.__gen_db_conn()
+        """Creates the final list of dictionaries used in page serialization and then commits them
+        to the database.
+        """
 
+        # Get list of existing menus for the next two weeks and any other urls to use.
         curr_menus = self.__db_conn.get_page_info_within_range(day_delta=15)
         block_urls = self.__gen_url_block()
+
+        # List to be used in the page parser.
         final_urls = []
 
+        # Finds any urls that exist in both curr_menus and block_urls and removes from the latter.
         for m in curr_menus:
             unquoted_url = unquote(m.get('url'))
+
+            # Remove any common urls from block_urls.
             if unquoted_url in block_urls:
                 block_urls.remove(unquoted_url)
 
             final_urls.append({'sum': m.get('sum'), 'url': unquoted_url})
 
+        # Any remaining urls should be the disjoint of the two lists.
         final_urls.extend([{'url': i} for i in block_urls])
 
+        # Instantiate the page parser and get the menus.
         menu_gen = ucrfood.FoodSort(final_urls)
         menu_gen.get_menus()
 
+        # Upload the parsed menus to the database.
         for m in menu_gen.menus:
             if m.get('time_info').get('update'):
-                self.__db_conn.update_menu_on_date(m.get('time_info').get('menu_date'))
+                self.__db_conn.update_menu_on_date(m.get('time_info').get('menu_date'), m)
             else:
                 self.__db_conn.add_menu_data(m)
