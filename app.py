@@ -12,5 +12,5 @@ if __name__ == '__main__':
         # Run every 24 hours.
         app.run_schedule(interval=24)
     except KeyboardInterrupt or SystemExit:
-        print("Stopping...")
+        print("\nStopping...")
         app.stop()

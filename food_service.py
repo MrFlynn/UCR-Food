@@ -119,8 +119,11 @@ class FoodService:
 
         :param interval: interval in hours. Default is 12 hours.
         """
+        self.run()
+
         s = sched.scheduler(time.time, time.sleep)
         s.enter(interval * 3600, 2, self.run)
+        s.run()
 
     def stop(self):
         """Disconnects from the rethinkdb server.
