@@ -7,7 +7,4 @@ COPY . /opt/ucr-food
 WORKDIR /opt/ucr-food
 
 # Install required packages.
-RUN pip install requirements.txt
-
-# Run the main python script.
-CMD ['python', 'app.py']
+RUN pip install -r requirements.txt

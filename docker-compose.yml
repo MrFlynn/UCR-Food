@@ -1,0 +1,15 @@
+version: '2'
+services:
+  db:
+    image: rethinkdb:latest
+    ports:
+      - "28015:28015"
+      - "8080:8080"
+    volumes:
+      - "/data:/data"
+    command: rethinkdb --bind all --directory /data
+  app:
+    build: .
+    command: python app.pyx
+    depends_on:
+      - db
