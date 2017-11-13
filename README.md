@@ -2,7 +2,7 @@
 Creates and stores objects based on dining hall menus at UC Riverside.
 
 This is a never-ending (seemingly) side project of mine. It mainly 
-accomlishes these goals:
+accomplishes these goals:
 1. Gives me something work on when I'm bored.
 2. Experience with creating fast data processing pipelines in Python.
 3. Experience in creating and maintaining a highly modular Python application.
@@ -13,10 +13,14 @@ accomlishes these goals:
 Install Docker and Docker Compose.
 ```bash
 # Ubuntu:
-$ apt-get install docker docker-compose
+$ apt-get install docker
+$ sudo pip install docker-compose
 
 # Mac OS:
-$ brew install docker docker-compose
+$ brew install docker
+
+# Finally, create a directory to store RethinkDB data.
+$ mkdir /data && chown -r /data
 ```
 
 ### Virtualenv:
