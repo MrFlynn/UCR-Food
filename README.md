@@ -20,7 +20,7 @@ $ sudo pip install docker-compose
 $ brew install docker
 
 # Finally, create a directory to store RethinkDB data.
-$ mkdir /data && chown -r /data
+$ mkdir /data && chown -R $(whoami) /data
 ```
 
 ### Virtualenv:

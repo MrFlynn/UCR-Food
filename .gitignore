@@ -14,8 +14,5 @@ venv/
 # Ignore RethinkDB stuff.
 rethinkdb_data/
 
-# Ignore docker stuff for the moment.
-/docker-compose.yml
-
 # Ignore testing scripts.
 *test.py
