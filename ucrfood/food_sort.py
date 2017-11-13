@@ -53,11 +53,10 @@ class FoodSort:
         :param page_content: string representing the page content.
         :return: md5sum of page_content.
         """
-        print(page_content)
         m = md5()
 
         # Update the md5 parser with the content of the page and return the hex digest.
-        m.update(page_content)
+        m.update(page_content.encode('utf-8'))
         return m.hexdigest()
 
     @staticmethod
@@ -121,7 +120,8 @@ class FoodSort:
 
         # Source url and page sum.
         serial['url'] = quote(url_entry.get('url'), safe='')
-        serial['sum'] = self.__get_page_sum(''.join(''.join(i) for i in url_entry.get('content')))
+        serial['sum'] = self.__get_page_sum(''.join(
+            ''.join(str(i)) for i in url_entry.get('content')))
 
         return serial
 
