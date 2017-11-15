@@ -7,4 +7,6 @@ COPY . /opt/ucr-food
 WORKDIR /opt/ucr-food
 
 # Install required packages.
-RUN pip install -r requirements.txt
+RUN apk add --update --no-cache \
+	g++ gcc libxslt-dev \
+	&& pip install -r requirements.txt

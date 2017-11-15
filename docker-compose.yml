@@ -10,6 +10,6 @@ services:
     command: rethinkdb --bind all --directory /data
   app:
     build: .
-    command: python app.pyx
+    command: python app.py
     depends_on:
       - db

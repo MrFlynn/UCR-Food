@@ -38,11 +38,11 @@ $ python3 -m pip install virtualenv
 ```
 
 ## Running the Server:
-**WARNING:** Project isn't finished yet. Things *will not* work.
-
 ### Using Docker:
+First, make sure that the host for the database is set to the alias in the compose
+file (i.e. make sure it is set to `db`).
 
-Just run these two simple commands:
+Then, just run these two simple commands:
 
 ```bash
 $ docker-compose build
